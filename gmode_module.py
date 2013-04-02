@@ -113,11 +113,11 @@ def G(f, X, ct, iS, iR):
 
     #z2 = fabs( X * ravel( dot(iR, mahalanobis ) ) )
     
-    #if aall(fa > 100e0):
-    return  sqrt(2e0*z2) -  sqrt(2e0*f - 1e0)
+    if aall(fa > 100e0):
+       return  sqrt(2e0*z2) -  sqrt(2e0*f - 1e0)
 
-    #elif aall(fa > 30e0) and aall(fa <= 100e0):
-    #   return ((z2/f)**(1e0/3) - (1e0 - (2e0/9)*f))/sqrt((2e0/9)*f)
+    elif aall(fa > 30e0) and aall(fa <= 100e0):
+       return ((z2/f)**(1e0/3) - (1e0 - (2e0/9)*f))/sqrt((2e0/9)*f)
 
 #
 # G Hypothesis test
