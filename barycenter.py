@@ -7,24 +7,20 @@
 from __future__ import print_function, unicode_literals, absolute_import, division
 
 ##### IMPORT ######
-from numpy import Infinity, sqrt, median, array, amax, amin, linspace, fabs, argmax, argmin, where
+from numpy import Infinity, sqrt, median, array, amax, amin, linspace, fabs, argmax, argmin, where, histogramdd, unravel_index
 from numpy import all as aall
 from numpy import sum as asum
-from scipy.spatial.distance import pdist, squareform as sqf
 from scipy.spatial import cKDTree, KDTree
-from itertools import combinations, product, tee, izip, imap, chain
+from itertools import combinations, tee, izip, imap, chain
 from collections import Counter, deque
-from gmode_module import stats
 
 #  functions
 
 boo = lambda x, xlim: x <= xlim[1] and x >= xlim[0]
-G   = lambda z2, f: sqrt(2e0*z2) - sqrt(2e0*f - 1e0)
-z2  = lambda G, f: ((G + sqrt(2e0*f - 1e0))**2)/2e0
 
 # boolean function
 
-def boolist(lim,values,index):
+def boolist(index, values, lim):
     if all([boo(item[0],item[1]) for item in izip(values,lim)]):
        return index
 
@@ -34,6 +30,10 @@ def pairwise(iterable):
     next(b, None)
     return izip(a, b)
 
+def volume(lst):
+    p = 1
+    for i in lst: p *= i[1] - i[0]
+    return p
 #
 # K-Nearest Neighbours
 #
@@ -68,67 +68,18 @@ def barycenter_KNN(data, index, label):
     else:
        return []
 
-def barycenter_KNN2(data, index):
-
-    ''' KNN with densest neighbourhood '''
-
-    ct, dev, R = stats(data[index])
-    f = R*data.shape[1]
-
-    tree = KDTree(data[index])
-    dist = median(pdist(data[index], 'seuclidean', V=dev))
-    #print(G(dist,f))
-    
-    prior = 0
-    for item in data[index]:
-        neigh = tree.query_ball_point(item,r=dist)
-        if len(neigh) > prior:
-           seed = neigh
-           prior = len(neigh)
-
-    try:
-       return map(lambda j: index[j], seed)
-    except UnboundLocalError:
-       return []
-
-#
-# find the closest pairs and its most common item.
-#
-def barycenter_pairs(data, index):
-
-    closest = deque()
-    pmatrix = pdist(data[index], 'seuclidean', V=stats(data)[1])
-
-    i = 0   
-    while i < len(index) and aall(pmatrix == Infinity) != True:
-          minimum = amin(pmatrix)
-          pair = where(sqf(pmatrix) == minimum)[0]
-          closest.append(list(pair))
-          pmatrix[argmin(pmatrix)] = Infinity
-          i +=1
-          
-    score      = Counter(list(chain(*closest)))
-    common     = score.most_common(1)
-    seed       = deque()
-    for pair in closest:
-        if pair[0] == common[0][0] or pair[1] == common[0][0]:
-           seed.extend(pair)
-
-    return set(seed)
-
 #
 # Divide the sample in sectors, select the most crowded one,
-# and find a clump of items to be seed.
+# and find the most popular one and his friends to be the seed.
 #
 
 def barycenter_hist(grid, design, data):
     
-    from numpy import histogramdd, unravel_index
-    
-    # Best number of bin by Scott (1979).    
+    from numpy import histogramdd, unravel_index  
 
     upper = amax(data, axis=0)
     lower = amin(data, axis=0)
+    rng   = range(data.shape[1])
 
     nbin = map(int,array([grid]*data.shape[1]))
 
@@ -138,12 +89,12 @@ def barycenter_hist(grid, design, data):
 
     if amax(hist) > 5:
        del hist
-       limits = array([list(pairwise(edges[i])) for i in xrange(data.shape[1])])  
+       limits = array([list(pairwise(edges[i])) for i in rng])  
 
-       zone = [limits[i][j] for i, j in zip(range(data.shape[1]),ind)]
+       zone = [limits[i][j] for i, j in izip(rng,ind)]
     
        elems_ind = filter(lambda x: x != None, \
-                          imap(lambda i, y: boolist(zone,y,i), xrange(data.shape[0]), data)) 
+                          imap(lambda i, y: boolist(i,y,zone), range(data.shape[0]), data)) 
 
        return barycenter_KNN(data, elems_ind, design)
     else:
@@ -152,38 +103,33 @@ def barycenter_hist(grid, design, data):
           return barycenter_hist(grid, design, data)
        else:
           return []
-
+    
 #
-# Formal barycenter algorithm: Divide the sample in sector,
-# calculate the moments and Gj of each sector and find
-# the crowdest one, which will be the initial seed.
+# Initial seed by density. Recursive histogramdd.
 #
 
-def barycenter(fa, q1, grid, data):
-    from gmode_module import hyp_test, stats
+def barycenter_density(data, grid, upper, lower, dens = 0e0, nmin = 5):
 
-    upper = amax(data, axis=0)
-    lower = amin(data, axis=0)
+    rng   = range(data.shape[1])
 
-    edges = [list(pairwise(linspace(lower[i],upper[i],grid))) for i in xrange(data.shape[1])] 
+    nbin = map(int,array([grid]*data.shape[1]))
 
-    seed, initial, prev_initial_len = list(), list(), 0
+    hist, edges = histogramdd(data,bins=nbin,range=tuple(zip(lower, upper)))
 
-    for zones in product(*edges):
+    limits = array([list(pairwise(edges[i])) for i in rng])
 
-        elems_ind = filter(lambda x: x != None, \
-                    imap(lambda i, y: boolist(zones,y,i), xrange(data.shape[0]), data)) 
+    ind = unravel_index(argmax(hist), hist.shape) 
 
-        if len(elems_ind) > 5:
-           
-           elems = data[elems_ind]
-           ct, dev, R = stats(elems)          
-           initial = filter(lambda x: x != None, \
-                     imap(lambda i, y: hyp_test(q1,fa,i,y,ct,dev,R), elems_ind, elems))
-           
-           if len(initial) > prev_initial_len:
-              seed = initial
-              prev_initial_len = len(seed)
+    zone = array([limits[i,j] for i, j in izip(rng, ind)])
+
+    density = amax(hist) / volume(zone)
     
-    return seed
-    
+    if density > dens and amax(hist) > nmin:
+       zone = zone.T
+       return barycenter_density(data, grid, zone[1], zone[0], density)
+
+    else:
+       #print(zone, amax(hist), density)
+       return filter(lambda x: x != None, \
+                     imap(lambda i, y: boolist(i,y,zone), xrange(data.shape[0]), data))
+      

@@ -42,7 +42,7 @@ def plot_distribution(data,*zones):
         
     plt.show()
 
-def plot_map(Nc, clump, seed, data, link):
+def plot_map(Nc, clump, seed, data, link, lim=[0.6, 1.8]):
     
     plt.figure(figsize=(6,10),dpi=60)
     
@@ -61,8 +61,8 @@ def plot_map(Nc, clump, seed, data, link):
 
         plt.hexbin(data[:,n-1],data[:,n],gridsize=200,bins='log',mincnt=1)
         plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go')
-        plt.xlim(0.4, 1.8); plt.xlabel(lbl[n-1])
-        plt.ylim(0.6, 1.8); plt.ylabel(lbl[n])
+        plt.xlim(lim[0], lim[1]); plt.xlabel(lbl[n-1])
+        plt.ylim(lim[0], lim[1]); plt.ylabel(lbl[n])
 
     cb=plt.colorbar(orientation='horizontal',fraction=0.10,pad=0.3,drawedges=False)
     cb.set_label('log10(N)')
@@ -89,7 +89,7 @@ def plot_clump(n, stats, data, label, lim, norm, axis):
     plt.title('Clump '+str(n)+' Na='+str(data.shape[0]))
 
     for item in data:
-        item = ainsert(item,norm[0],norm[1])
+        if norm != None : item = ainsert(item,norm[0],norm[1])
         for xy in izip(pairwise(item),pairwise(axis)):
             y.extend(xy[0])
             y.append(None)
@@ -97,11 +97,12 @@ def plot_clump(n, stats, data, label, lim, norm, axis):
             x.append(None)
 
     plt.plot(x, y, 'k-')
-    #spcs  = LineCollection(x, to_plot)
-    #axes.add_collection(spcs)
 
     # Class Central Tendency e Total Deviation:
-    ct, dev = ainsert(stats[0],norm[0],norm[1]), ainsert(stats[1],norm[0],0e0)
+    if norm != None: 
+       ct, dev = ainsert(stats[0],norm[0],norm[1]), ainsert(stats[1],norm[0],0e0)
+    else:
+       ct, dev = stats[0], stats[1]
 
     plt.errorbar(axis,ct,yerr = dev,fmt='o',color='r',ecolor='r',elinewidth=3)
 
@@ -129,12 +130,11 @@ def dendrogram(D,label):
     lbl = ['T'+str(n+1) for n in xrange(D.shape[0])]
 
     # Compute and plot dendrogram.
-    fig = plt.figure(figsize=(8,12),dpi=100)
+    fig = plt.figure(figsize=(8,14),dpi=100)
     ax1 = fig.add_axes([0.04,0.04,0.9,0.9])
     Y = sch.median(D)
     Z1 = sch.dendrogram(Y, orientation='right',labels=lbl)
-    ax1.ylabel(fontsize=10)
-    #ax1.set_xticks([])
+    ax1.set_xticks([])
 
 
     plt.savefig(pathjoin("TESTS",label,"plots",'dendrogram_'+label+'.png'),format='png')

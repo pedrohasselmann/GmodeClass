@@ -178,7 +178,8 @@ class Gmode:
 
      def Run(self,**arg):
 
-         from kernel import classifying 
+         from kernel import classifying
+         from math import log
 
          if len(arg) == 0:
 
@@ -208,19 +209,17 @@ class Gmode:
          M=len(elems[0]) # Variable size
 
          # Find best number of grid:
-         grid = 2
-         while grid**(M) < zones:  grid += 1
-         grid -= 1
+         grid = round(log(zones, M))
          
          print('grid: ',grid,"--> ", grid**(M),' < ',zones)
 
          ########## Sample statistical moments ##############
 
          ctt, devt, St, Rt = stats(elems)
-         #Se = array(cov(self.errs,zeros(M), 1e0))
-         Se = median( self.errs, axis=0)
-         #Se_St = sqrt(Se)/sqrt(array(St))
-         Se_St = Se/devt
+         Se = array(cov(self.errs,zeros(M), 1e0))
+         #Se = median( self.errs, axis=0)
+         Se_St = sqrt(Se)/sqrt(array(St))
+         #Se_St = Se/devt
 
          vlim   = vlim   * Se_St
          minlim = minlim * Se_St
@@ -258,14 +257,14 @@ class Gmode:
 
                Na = len(group)
 
-               if Na > 3 or Na >= len(seed):
+               if Na > 3 or Na >= len(seed) and Na != 0:
                         print("Barycenter size: ",len(seed))
                         print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
-                        '''try:
-                          plot_map(Nc, group, seed, elems, self.label)
+                        try:
+                          plot_map(Nc, group, seed, elems, self.label, lim=[0,10])
                         except IndexError:
-                          pass '''
+                          pass
  
                         # Save group member indexes
                         all_groups.append(map(lambda i: indexs[i], group))
@@ -378,22 +377,25 @@ class Gmode:
          else:
             q1      = arg['q1']
 
-         sample = map(lambda j: self.elems[j], self.excluded)
+         all_groups = self.all_groups
+         excluded   = self.excluded
+         elems      = self.elems
+         sample = map(lambda j: elems[j], excluded)
          
          N = deque()
 
          for n, st in enumerate(self.all_stats_groups):
-             #iS, iR = Invert(st[2]), Invert(st[3])
-             #f = free(st[3])
-             f  = (st[1].size**2)/asum(st[3])
-             iR = f/st[1].size
-             iS = st[1]
+             iS, iR = Invert(st[2]), Invert(st[3])
+             f = free(iR)
+             #f  = (st[1].size**2)/asum(st[3])
+             #iR = f/st[1].size
+             #iS = st[1]
              selected = filter(lambda x: x != None, \
-                               imap(lambda ind, y: hyp_test(q1,f,ind,y,st[0],iS,iR), self.excluded, sample))
+                               imap(lambda ind, y: hyp_test(len(all_groups[n]),q1,f,ind,y,st[0],iS), excluded, sample))
 
              if len(selected) != 0: 
-                plot_map(1001+n,self.excluded,selected,self.elems, self.label)
-                self.all_groups[n].extend(selected)
+                plot_map(1001+n, excluded, selected, elems, self.label, lim=[0,10])
+                all_groups[n].extend(selected)
                 N.extend(selected)
          
          N = set(N)
@@ -470,5 +472,5 @@ if __name__ == '__main__':
    end    = gmode.TimeIt()
    classf = gmode.Classification()
    log    = gmode.WriteLog()
-   plot   = gmode.Plot()
+   plot   = gmode.Plot(lim=[0,10], norm=None, axis=[1,2])
    dendo  = gmode.Dendrogram()

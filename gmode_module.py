@@ -32,8 +32,8 @@ TINY = 1e-6
 # Sample Statistics 
 #
 
-def free(R):
-    return   ravel( 1e0/asum(R, axis=0) )
+def free(iR):
+    return ravel(asum(iR, axis=0)) #ravel( 1e0/asum(R, axis=0) )
 
 def pearson_R(X):
     r2 = corrcoef(zip(*X))**2
@@ -44,7 +44,7 @@ def pearson_R(X):
        whereNaN = isnan(r2)
        r2[whereNaN] = 1e0
 
-    return matrix(r2) #X.shape[1]/asum(r2)
+    return r2
 
 def Robust_R(X, ct, dev):
     ''' Shevlyakov 1997 - On a Robust Estimation of Correlation Coeficient'''
@@ -71,7 +71,7 @@ def mad(X, ct, K=1.4826):
     return K*median(fabs(X - ct), axis=0)
 
 def cov(X, ct, K=1.4826):
-    X = fabs(X - ct)
+    X = X - ct
     return matrix( [median(X.T*X[:,i], axis=1)*K**2 for i in xrange(X.shape[1])] )
     
 
@@ -79,8 +79,8 @@ def stats(X):
                
     #X   = array(X)
     ct  = median(X, axis=0)      
-    S   = 1e0 #cov(X, ct)
-    dev = mad(X, ct) #sqrt(diagonal(S))
+    S   = cov(X, ct)
+    dev = sqrt(diagonal(S))
     R   = Robust_R(X, ct, dev)
 
     return ct, dev, S, R
@@ -102,29 +102,31 @@ def shortcut(group, data):
 # G estimator (Abramowitz 1962)
 #
 
-def G(f, X, ct, iS, iR):
+def G(N, f, X, ct, iS):
 
     ''' G parameter --> Transforms a X2 estimator to a Gaussian estimator '''
 
-    z2  = iR * asum( ( (X - ct) / (iS + TINY) )**2  )     # Z2 estimator
+    #z2  = iR * asum( ( (X - ct) / (iS + TINY) )**2  )     # Z2 estimator
       
-    #X = X - ct
-    #mahalanobis = ravel( dot(iS, X ) )
+    X = X - ct
+    z2 = fabs( X * ravel( dot(iS, X ) ) )
 
-    #z2 = fabs( X * ravel( dot(iR, mahalanobis ) ) )
-    
-    if aall(fa > 100e0):
+    if aall(N*f > 100e0):
        return  sqrt(2e0*z2) -  sqrt(2e0*f - 1e0)
 
-    elif aall(fa > 30e0) and aall(fa <= 100e0):
+    elif aall(N*f >= 30e0) and aall(N*f <= 100e0):
        return ((z2/f)**(1e0/3) - (1e0 - (2e0/9)*f))/sqrt((2e0/9)*f)
+    
+    elif aall(N*f < 30):
+       return None
 
 #
 # G Hypothesis test
 #
 
-def hyp_test(q1, f, index, x, ct, iS, iR):
-    if aall(G(f, x, ct, iS, iR) < q1):
+def hyp_test(N, q1, f, index, x, ct, iS):
+    #print(G(N, f, x, ct, iS, iR))
+    if aall(G(N, f, x, ct, iS) < q1):
        return index
 
 def CollapseClassification(clusters, ID):

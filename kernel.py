@@ -7,11 +7,11 @@
 from __future__ import print_function, unicode_literals, absolute_import, division
 
 from gmode_module import stats, hyp_test, Invert, free
-from barycenter import barycenter, barycenter_hist, barycenter_KNN
+from barycenter import barycenter_hist, barycenter_density
 #from plot_module import plot_group, plot_distribution
 from file_module import l_to_s
 from itertools import imap
-from numpy import array, sqrt, median, diagonal, diagflat, eye, ndenumerate
+from numpy import array, sqrt, amax, amin, median, diagonal, diagflat, eye, ndenumerate
 from numpy import any as aany
 from numpy import sum as asum
 from numpy import round as arround
@@ -28,7 +28,7 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
     N = data.shape[0]    # Sample Number
     M = data.shape[1]
 
-#_______________________________Whiten the sample__________________________
+#_______________________________Whitenning the sample__________________________
 
     #elems = data
     data = data/devt
@@ -38,7 +38,8 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
     #from subroutines_gmode import barycenter_fast
     #seed = barycenter_fast(50, design, data, devt)
 
-    seed = barycenter_hist(grid, design, data)
+    #seed = barycenter_hist(grid, design, data)
+    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0))
 
     if len(seed) > 2:
        report.append("Barycenter: "+l_to_s(map(lambda j: design[j], seed)))
@@ -51,30 +52,25 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
 # ______________________________CLASSIFICATION__________________________________
 
     i = 0
-    Rg, Na_prior  = 1e0, Na #eye(M), Na
+    Rg, Na_prior  = eye(M), Na
     
     #make_dir(pathjoin("TESTS",label,"plots","Clump"+str(Nc),""))
 
-    #(round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior)
-    while (i == 0 or (round(Rg,6) != round(R_prior,6) and Na != Na_prior)) and i < 20 and Na > 2:
+    #(round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior) (round(Rg,6) != round(R_prior,6) and Na != Na_prior)
+    while (i == 0 or (round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior)) and i < 20 and Na > 2:
 
           R_prior = Rg
 
 # *g --> group statistics
 
           ctg, devg, Sg, Rg = stats(data[group])
-          #devg = vlim
 
 # Algorithm to replace zeroth deviations:
 
           if i == 0 : #and Na == Na_prior and any(zeroth): 
-             for n, cov in ndenumerate(devg):
-              #if i == 0 :
+             for n, cov in ndenumerate(Sg):
                  if cov < minlim[n]:
-                    devg[n] = minlim[n]
-                 
-              #if d > vlim[n]:
-              #   devg[n] = vlim[n]
+                    Sg[n] = minlim[n]
 
           Na_prior = Na
 
@@ -83,14 +79,14 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
 
 # G hypothesis test:
 
-          #iSg, iRg = Invert(Sg), Invert(Rg)
-          #f = free(Rg)
+          iSg, iRg = Invert(Sg), Invert(Rg)
+          f = free(iRg)
 
-          f  = (M**2)/asum(Rg)
-          Rg = f/M
+          #f  = (M**2)/asum(Rg)
+          #Rg = f/M
 
           group = filter(lambda x: x != None, \
-                  imap(lambda ind, y: hyp_test(q1,f,ind,y,ctg,devg,Rg), range(N), data))
+                  imap(lambda ind, y: hyp_test(N,q1,f,ind,y,ctg,iSg), range(N), data))
 
           Na = len(group)
 
