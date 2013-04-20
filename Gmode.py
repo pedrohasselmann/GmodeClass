@@ -472,5 +472,5 @@ if __name__ == '__main__':
    end    = gmode.TimeIt()
    classf = gmode.Classification()
    log    = gmode.WriteLog()
-   plot   = gmode.Plot(lim=[0,10], norm=None, axis=[1,2])
+   plot   = gmode.Plot()
    dendo  = gmode.Dendrogram()
