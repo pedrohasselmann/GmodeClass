@@ -16,10 +16,6 @@ from numpy import any as aany
 from numpy import sum as asum
 from numpy import round as arround
 from plot_module import plot_clump
-
-#from Gmode_v3 import make_dir
-#import os
-#pathjoin = os.path.join
   
 ############ Neighboring Central Method: Recognition of Classes and Classification ###########
  
@@ -39,7 +35,7 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
     #seed = barycenter_fast(50, design, data, devt)
 
     #seed = barycenter_hist(grid, design, data)
-    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0))
+    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), nmin=int(grid*30/M))
 
     if len(seed) > 2:
        report.append("Barycenter: "+l_to_s(map(lambda j: design[j], seed)))
@@ -79,8 +75,8 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
 
 # G hypothesis test:
 
-          iSg, iRg = Invert(Sg), Invert(Rg)
-          f = free(iRg)
+          iSg = Invert(Sg) #, Invert(Rg)
+          f = free(Rg)
 
           #f  = (M**2)/asum(Rg)
           #Rg = f/M

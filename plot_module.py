@@ -42,27 +42,28 @@ def plot_distribution(data,*zones):
         
     plt.show()
 
-def plot_map(Nc, clump, seed, data, link, lim=[0.6, 1.8]):
+def plot_map(Nc, clump, seed, data, link, lbl=['R_u','R_r','R_i','R_z'], lim=[0.6, 1.8]):
     
     plt.figure(figsize=(6,10),dpi=60)
     
     data  = array(data)
     clump = array(clump)
     seed  = array(seed)
-    Na = data.shape[1]    
+    M = data.shape[1]    
 
     plt.title('Clump '+str(Nc))
     
-    lbl = ['R_u','R_r','R_i','R_z']
-    
-    for n in xrange(1,Na):
-        i = int((Na-1)*100+10+n)
+    for n in xrange(1,M):
+        i = int((M-1)*100+10+n)
         plt.subplot(i)
 
         plt.hexbin(data[:,n-1],data[:,n],gridsize=200,bins='log',mincnt=1)
         plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go')
-        plt.xlim(lim[0], lim[1]); plt.xlabel(lbl[n-1])
-        plt.ylim(lim[0], lim[1]); plt.ylabel(lbl[n])
+        plt.xlim(lim[0], lim[1])
+        plt.ylim(lim[0], lim[1])
+        if lbl != None: 
+           plt.ylabel(lbl[n]) 
+           plt.xlabel(lbl[n-1])
 
     cb=plt.colorbar(orientation='horizontal',fraction=0.10,pad=0.3,drawedges=False)
     cb.set_label('log10(N)')

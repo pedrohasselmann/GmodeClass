@@ -32,8 +32,8 @@ TINY = 1e-6
 # Sample Statistics 
 #
 
-def free(iR):
-    return ravel(asum(iR, axis=0)) #ravel( 1e0/asum(R, axis=0) )
+def free(R):
+    return ravel( R.shape[1]/asum(R, axis=0) )
 
 def pearson_R(X):
     r2 = corrcoef(zip(*X))**2
@@ -118,7 +118,7 @@ def G(N, f, X, ct, iS):
        return ((z2/f)**(1e0/3) - (1e0 - (2e0/9)*f))/sqrt((2e0/9)*f)
     
     elif aall(N*f < 30):
-       return None
+       return 9e9
 
 #
 # G Hypothesis test

@@ -108,7 +108,7 @@ def barycenter_hist(grid, design, data):
 # Initial seed by density. Recursive histogramdd.
 #
 
-def barycenter_density(data, grid, upper, lower, dens = 0e0, nmin = 5):
+def barycenter_density(data, grid, upper, lower, dens = 0e0, nmin = 6):
 
     rng   = range(data.shape[1])
 
@@ -126,10 +126,10 @@ def barycenter_density(data, grid, upper, lower, dens = 0e0, nmin = 5):
     
     if density > dens and amax(hist) > nmin:
        zone = zone.T
-       return barycenter_density(data, grid, zone[1], zone[0], density)
+       return barycenter_density(data, grid, zone[1], zone[0], density, nmin)
 
     else:
-       #print(zone, amax(hist), density)
+       #print(nmin, amax(hist), density)
        return filter(lambda x: x != None, \
                      imap(lambda i, y: boolist(i,y,zone), xrange(data.shape[0]), data))
       
