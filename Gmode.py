@@ -88,6 +88,7 @@ class Gmode:
             self.par = main()
 
             q1        =  self.par.q1
+            zones     =  self.par.zones
             vlim      =  self.par.vlim
             minlim    =  self.par.minlim
             self.name =  self.par.name
@@ -96,16 +97,17 @@ class Gmode:
             print("imported")
 
             q1         = arg["q1"]
+            zones      = arg["zones"]
             vlim       = arg["vlim"]
             minlim     = arg["minlim"]
             self.name  = arg["name"]
 
          if vlim != 1e0:
-             self.label = 'q'+str(q1)+'_v'+str(vlim)+'_'+self.name
+             self.label = 'q'+str(q1)+'_z'+str(round(log10(zones),2))+'_v'+str(vlim)+'_'+self.name
          elif minlim != 1e0:
-             self.label = 'q'+str(q1)+'_m'+str(minlim)+'_'+self.name
+             self.label = 'q'+str(q1)+'_z'+str(round(log10(zones),2))+'_m'+str(minlim)+'_'+self.name
          else:
-             self.label = 'q'+str(q1)+'_'+self.name
+             self.label = 'q'+str(q1)+'_z'+str(round(log10(zones),2))+'_'+self.name
 
          mypath = pathjoin("TESTS",self.label)
          make_dir(mypath)
@@ -222,7 +224,10 @@ class Gmode:
          vlim   = vlim   * Se_St
          minlim = minlim * Se_St
          #print(median(self.errs, axis=0)/ devt)
+         #print(vlim)
          print(minlim)
+
+         #fa = N * free(Rt)         # Degrees of Freedom of all sample
 
          groups_syntesis =["Clump   N                mean                      dev"]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
@@ -257,7 +262,7 @@ class Gmode:
                         print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
                         try:
-                          plot_map(Nc, group, seed, elems, self.label)
+                          plot_map(Nc, group, seed, elems, self.label, lim=[0,10])
                         except IndexError:
                           pass
  
@@ -380,8 +385,8 @@ class Gmode:
          N = deque()
 
          for n, st in enumerate(self.all_stats_groups):
-             iS = Invert(st[2]) #, Invert(st[3])
-             f = free(st[3])
+             iS, iR = Invert(st[2]), Invert(st[3])
+             f = free(iR)
              #f  = (st[1].size**2)/asum(st[3])
              #iR = f/st[1].size
              #iS = st[1]
@@ -389,7 +394,7 @@ class Gmode:
                                imap(lambda ind, y: hyp_test(len(all_groups[n]),q1,f,ind,y,st[0],iS), excluded, sample))
 
              if len(selected) != 0: 
-                plot_map(1001+n, excluded, selected, elems, self.label)
+                plot_map(1001+n, excluded, selected, elems, self.label, lim=[0,10])
                 all_groups[n].extend(selected)
                 N.extend(selected)
          
@@ -467,5 +472,5 @@ if __name__ == '__main__':
    end    = gmode.TimeIt()
    classf = gmode.Classification()
    log    = gmode.WriteLog()
-   plot   = gmode.Plot() #lim=[0,10], norm=None, axis=[1,2])
+   plot   = gmode.Plot()
    dendo  = gmode.Dendrogram()
