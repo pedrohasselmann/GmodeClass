@@ -15,9 +15,8 @@ import os
 from time import time
 from scipy import stats as scp_sts
 from collections import deque
-from numpy import array, zeros, median, diagonal, sqrt, genfromtxt, loadtxt, float64, all
-from numpy import sum as asum
-from gmode_module import stats, shortcut, Invert, G, hyp_test, free, cov
+from numpy import array, zeros, dot, sqrt, genfromtxt, loadtxt, fabs, float64, all
+from gmode_module import stats, shortcut, Invert, hyp_test, free, cov
 from file_module import l_to_s, pretty_print, WriteIt 
 from plot_module import plot_map
 
@@ -59,11 +58,11 @@ def make_dir(pth):
 
 class Gmode:
 
-     __version__ = 3.5
+     __version__ = 4.0
 
      def __str__(self):
          return ' #########################################################################################################\n   \
-                  ################ Statistical Classification Method G-mode - version 3.5 for Python 2.7.2 ################\n   \
+                  ################ Statistical Classification Method G-mode - version 4.0 for Python 2.7.2 ################\n   \
                   ################         Program Developer: Pedro Henrique A Hasselmann                  ################\n   \
                   ################       Method Developer: A. I. Gavrishin and A. Coradini                 ################\n   \
                   #########################################################################################################\n   \
@@ -77,8 +76,6 @@ class Gmode:
          make_dir(pathjoin("TESTS",""))
 
      def Load(self,**arg):
-
-         from math import log10
 
          self.unmeaning_var = list()
 
@@ -127,7 +124,6 @@ class Gmode:
          else:
             filename  = arg["file"]
 
-         from time import time
          from operator import getitem, itemgetter
 
          data = map(list,genfromtxt(filename, dtype=None))
@@ -214,15 +210,14 @@ class Gmode:
          ########## Sample statistical moments ##############
 
          ctt, devt, St, Rt = stats(elems)
-         Se = array(cov(self.errs,zeros(M), 1e0))
-         #Se = median( self.errs, axis=0)
-         Se_St = sqrt(Se)/sqrt(array(St))
-         #Se_St = Se/devt
+         Se = cov(self.errs,zeros(M), 1e0)  #Se = median( self.errs, axis=0)
+               
+         Se_St = Se/array(St)
 
          vlim   = vlim   * Se_St
          minlim = minlim * Se_St
-         #print(median(self.errs, axis=0)/ devt)
-         print(minlim)
+
+         print(Se_St)
 
          groups_syntesis =["Clump   N                mean                      dev"]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
@@ -382,7 +377,6 @@ class Gmode:
          for n, st in enumerate(self.all_stats_groups):
              iS = Invert(st[2]) #, Invert(st[3])
              f = free(st[3])
-             #f  = (st[1].size**2)/asum(st[3])
              #iR = f/st[1].size
              #iS = st[1]
              selected = filter(lambda x: x != None, \

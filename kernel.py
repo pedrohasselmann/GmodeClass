@@ -11,7 +11,7 @@ from barycenter import barycenter_hist, barycenter_density
 #from plot_module import plot_group, plot_distribution
 from file_module import l_to_s
 from itertools import imap
-from numpy import array, sqrt, amax, amin, median, diagonal, diagflat, eye, ndenumerate
+from numpy import array, matrix, sqrt, amax, amin, median, diagonal, diagflat, eye, ndenumerate
 from numpy import any as aany
 from numpy import sum as asum
 from numpy import round as arround
@@ -63,10 +63,8 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
 
 # Algorithm to replace zeroth deviations:
 
-          if i == 0 : #and Na == Na_prior and any(zeroth): 
-             for n, cov in ndenumerate(Sg):
-                 if cov < minlim[n]:
-                    Sg[n] = minlim[n]
+          if i == 0 and any([True for n, dev in enumerate(devg) if dev < sqrt(minlim[n,n])]):
+             Sg = minlim
 
           Na_prior = Na
 
@@ -75,7 +73,7 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
 
 # G hypothesis test:
 
-          iSg = Invert(Sg) #, Invert(Rg)
+          iSg = Invert(Sg)
           f = free(Rg)
 
           #f  = (M**2)/asum(Rg)
