@@ -15,7 +15,7 @@ import os
 from time import time
 from scipy import stats as scp_sts
 from collections import deque
-from numpy import array, zeros, dot, sqrt, genfromtxt, loadtxt, fabs, float64, all
+from numpy import array, zeros, genfromtxt, loadtxt, float64, all
 from gmode_module import stats, shortcut, Invert, hyp_test, free, cov
 from file_module import l_to_s, pretty_print, WriteIt 
 from plot_module import plot_map
@@ -210,14 +210,12 @@ class Gmode:
          ########## Sample statistical moments ##############
 
          ctt, devt, St, Rt = stats(elems)
-         Se = cov(self.errs,zeros(M), 1e0)  #Se = median( self.errs, axis=0)
-               
-         Se_St = Se/array(St)
+         Se = cov(self.errs/devt,zeros(M), 1e0)
 
-         vlim   = vlim   * Se_St
-         minlim = minlim * Se_St
+         vlim   = vlim   * Se
+         minlim = minlim * Se
 
-         print(Se_St)
+         print(Se)
 
          groups_syntesis =["Clump   N                mean                      dev"]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])

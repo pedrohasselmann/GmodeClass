@@ -7,11 +7,11 @@
 from __future__ import print_function, unicode_literals, absolute_import, division
 
 ##### IMPORT ######
-from numpy import Infinity, sqrt, median, array, amax, amin, linspace, fabs, argmax, argmin, where, histogramdd, unravel_index
+from numpy import array, amax, amin, argmax, where, histogramdd, unravel_index
 from numpy import all as aall
 from numpy import sum as asum
-from scipy.spatial import cKDTree, KDTree
-from itertools import combinations, tee, izip, imap, chain
+from scipy.spatial import cKDTree
+from itertools import tee, izip, imap
 from collections import Counter, deque
 
 #  functions
@@ -73,9 +73,7 @@ def barycenter_KNN(data, index, label):
 # and find the most popular one and his friends to be the seed.
 #
 
-def barycenter_hist(grid, design, data):
-    
-    from numpy import histogramdd, unravel_index  
+def barycenter_hist(grid, design, data): 
 
     upper = amax(data, axis=0)
     lower = amin(data, axis=0)

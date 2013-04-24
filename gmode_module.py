@@ -9,7 +9,7 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 ##### IMPORT ######
 
 from os import path
-from numpy import sqrt, array, eye, matrix, dot, diagonal, diagflat, median, fabs, corrcoef, isnan, isinf, ravel
+from numpy import sqrt, array, eye, matrix, dot, diagonal, diagflat, median, fabs, corrcoef, isnan, ravel
 from numpy import all as aall
 from numpy import sum as asum
 from numpy.linalg.linalg import LinAlgError
@@ -125,8 +125,8 @@ def G(N, f, X, ct, iS):
 #
 
 def hyp_test(N, q1, f, index, x, ct, iS):
-    #print(G(N, f, x, ct, iS, iR))
     if aall(G(N, f, x, ct, iS) < q1):
+       #print(G(N, f, x, ct, iS))
        return index
 
 def CollapseClassification(clusters, ID):
