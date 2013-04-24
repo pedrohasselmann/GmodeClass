@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Filename: modules.py
-# author: Pedro Henrique A. Hasselmann
-# date: August 2012
+# Filename: file_module.py
 
 # Escrevendo em python3 e usando python2.7:
 from __future__ import print_function, unicode_literals, absolute_import, division
@@ -29,11 +27,6 @@ def pretty_print(matrix):
     return output
 
 def FileQuery(query,filename):
-  
-   '''
-    Write the ephemutil query in a file.
-    WARNING: All MPCephem queries must be 3-level neasted dictionaries.
-   '''
 
    log = open(path.join("Backup",str(filename)+".dat"),'w').write
   

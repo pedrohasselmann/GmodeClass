@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Filename: discrim_variable.py
-# Discriminating meaningless variables;
+# Filename: eval_variable.py
+# Evaluating variables;
 
 # Escrevendo em python3 e usando python2.6:
 from __future__ import print_function, unicode_literals, absolute_import, division
@@ -15,7 +15,7 @@ def verifying(q2, all_groups, elems):
   N  = len(elems)
   M  = len(elems[0])     # Variable number
 
-  TINY = 1e-6
+  TINY = 1e-9
 
 # Modules:
   from numpy import zeros, array, float32, sqrt, dot, ravel

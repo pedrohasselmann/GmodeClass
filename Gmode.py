@@ -1,10 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Filename: G-mode.py
-# Statistical Classification method G-mode
-
-# Escrevendo em python3 e usando python2.6:
-from __future__ import print_function, unicode_literals, absolute_import, division
+# G-mode Clustering method
+# Author: Pedro H. A. Hasselmann
 
 ######################## GLOBAL IMPORT #######################################
 
@@ -25,6 +23,7 @@ pathjoin = os.path.join
 
 # *s --> Interable with more than one element
 # *t --> total sample statistic
+# *g --> group/cluster statistic
 
 ########################## Shell Parameters ##################################
 def main():
@@ -224,7 +223,6 @@ class Gmode:
          report.append(" Minimum Deviation: "+str(minlim))
          report.append(" Confidence level q1: "+str(scp_sts.norm.cdf(q1) - scp_sts.norm.cdf(-q1)))
          report.append('grid: '+str(grid)+"-->"+str(grid**(M))+'<'+str(zones))
-         #print("Maximum number of excluded: ",int(N*(1e0 - scp_sts.norm.cdf(q1))))
 
          ######################################################
          
@@ -250,7 +248,7 @@ class Gmode:
                         print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
                         try:
-                          plot_map(Nc, group, seed, elems, self.label)
+                          plot_map(Nc, group, seed, elems, self.label) #, lbl=['1','2'], lim=[0,10])
                         except IndexError:
                           pass
  
