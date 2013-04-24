@@ -11,7 +11,7 @@ from barycenter import barycenter_hist, barycenter_density
 #from plot_module import plot_group, plot_distribution
 from file_module import l_to_s
 from itertools import imap
-from numpy import array, matrix, sqrt, amax, amin, median, diagonal, diagflat, eye, ndenumerate
+from numpy import array, sqrt, amax, amin, eye, ndenumerate
 from numpy import any as aany
 from numpy import sum as asum
 from numpy import round as arround
@@ -31,10 +31,6 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
 
 #________________________________Barycenter______________________________________
 
-    #from subroutines_gmode import barycenter_fast
-    #seed = barycenter_fast(50, design, data, devt)
-
-    #seed = barycenter_hist(grid, design, data)
     seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), nmin=int(grid*30/M))
 
     if len(seed) > 2:
@@ -63,7 +59,7 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
 
 # Algorithm to replace zeroth deviations:
 
-          if i == 0 and any([True for n, dev in enumerate(devg) if dev < sqrt(minlim[n,n])]):
+          if i == 0 and any([True for n, d in enumerate(devg) if d < sqrt(minlim[n,n])]) or aany(devg == 0e0):
              Sg = minlim
 
           Na_prior = Na
@@ -75,8 +71,6 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
 
           iSg = Invert(Sg)
           f = free(Rg)
-
-          #f  = (M**2)/asum(Rg)
           #Rg = f/M
 
           group = filter(lambda x: x != None, \

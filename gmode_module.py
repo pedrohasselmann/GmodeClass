@@ -26,7 +26,7 @@ pathjoin = path.join
 #median = md_sts.median
 #mad    = md_sts.median_abs_dev
 
-TINY = 1e-6
+TINY = 1e-9
 
 #
 # Sample Statistics 
