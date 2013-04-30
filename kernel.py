@@ -11,7 +11,7 @@ from barycenter import barycenter_hist, barycenter_density
 #from plot_module import plot_group, plot_distribution
 from file_module import l_to_s
 from itertools import imap
-from numpy import array, sqrt, amax, amin, eye, ndenumerate
+from numpy import array, sqrt, amax, amin, eye, ndenumerate, diagonal
 from numpy import any as aany
 from numpy import sum as asum
 from numpy import round as arround
@@ -19,7 +19,7 @@ from plot_module import plot_clump
   
 ############ Neighboring Central Method: Recognition of Classes and Classification ###########
  
-def classifying(q1, vlim, minlim, grid, design, data, devt, report):
+def classifying(q1, ulim, minlim, grid, design, data, devt, report):
 
     N = data.shape[0]    # Sample Number
     M = data.shape[1]
@@ -49,7 +49,7 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
     #make_dir(pathjoin("TESTS",label,"plots","Clump"+str(Nc),""))
 
     #(round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior) (round(Rg,6) != round(R_prior,6) and Na != Na_prior)
-    while (i == 0 or (round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior)) and i < 20 and Na > 2:
+    while (i == 0 or (round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior)) and i < 30 and Na > 2:
 
           R_prior = Rg
 
@@ -57,12 +57,23 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
 
           ctg, devg, Sg, Rg = stats(data[group])
 
-# Algorithm to replace zeroth deviations:
-
-          if i == 0 and any([True for n, d in enumerate(devg) if d < sqrt(minlim[n,n])]) or aany(devg == 0e0):
-             Sg = minlim
-
           Na_prior = Na
+          
+# Replace lower deviations than minimal limit:
+
+          if i == 0:
+             for n, d in enumerate(devg): 
+                 if d < sqrt(minlim[n,n]):
+                    Sg[n,n] = minlim[n,n]
+                    devg[n] = sqrt(minlim[n,n])
+
+# Replace deviations over upper limit:
+          if ulim < 1e0:
+             for n, S in ndenumerate(Sg):
+                 if S > ulim**2:
+                    Sg[n] = ulim**2
+             
+             devg = sqrt(diagonal(Sg))
 
           #plot_clump(i+1, [ctg*devt, devg*devt, Rg], elems[group], pathjoin(label,"plots","Clump"+str(Nc)), lim=[0.2,1.8], norm=[1,1e0], axis=[0.36,0.47,0.62,0.75,0.89])
              
@@ -79,6 +90,7 @@ def classifying(q1, vlim, minlim, grid, design, data, devt, report):
           Na = len(group)
 
           report.append("Run "+str(i)+" Size: "+str(Na)+" A.D.: "+l_to_s(arround(devg, 3))+"\nf: "+str(f)+"\n")
+          #report.append("Cov. Matrix : \n"+str(Sg))
 
           i += 1
 

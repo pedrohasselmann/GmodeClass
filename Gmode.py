@@ -34,7 +34,7 @@ def main():
     parser.add_option('--q1', action="store", dest="q1", default=2.5, type="float", help="Confidence level parameter 1")
     parser.add_option('--q2', action="store", dest="q2", default=2.5, type="float", help="Confidence level parameter 2")
     parser.add_option('-z','--zones', action="store", dest="zones", default=1, type="int", help="Number of zones")
-    parser.add_option('-v','--vlim', action="store", dest="vlim", default=1e0, type="float", help="Limited Deviation")
+    parser.add_option('-u','--ulim', action="store", dest="ulim", default=1e0, type="float", help="Limited Deviation")
     parser.add_option('-m','--minlim', action="store", dest="minlim", default=1e0, type="float", help="Minimum Deviation")
     parser.add_option('-n','--name', action="store", dest="name", default='birlan', type="str", help="Label for output customization")
 
@@ -84,7 +84,7 @@ class Gmode:
             self.par = main()
 
             q1        =  self.par.q1
-            vlim      =  self.par.vlim
+            ulim      =  self.par.ulim
             minlim    =  self.par.minlim
             self.name =  self.par.name
 
@@ -92,12 +92,12 @@ class Gmode:
             print("imported")
 
             q1         = arg["q1"]
-            vlim       = arg["vlim"]
+            ulim       = arg["ulim"]
             minlim     = arg["minlim"]
             self.name  = arg["name"]
 
-         if vlim != 1e0:
-             self.label = 'q'+str(q1)+'_v'+str(vlim)+'_'+self.name
+         if ulim != 1e0:
+             self.label = 'q'+str(q1)+'_u'+str(ulim)+'_'+self.name
          elif minlim != 1e0:
              self.label = 'q'+str(q1)+'_m'+str(minlim)+'_'+self.name
          else:
@@ -178,14 +178,14 @@ class Gmode:
 
             q1      = self.par.q1
             zones   = self.par.zones
-            vlim    = self.par.vlim
+            ulim    = self.par.ulim
             minlim  = self.par.minlim
 
          else:
 
             q1      = arg['q1']
             zones   = arg['zones']
-            vlim    = arg['vlim']
+            ulim    = arg['ulim']
             minlim  = arg['minlim']
             self.Load(**arg)
          
@@ -205,13 +205,13 @@ class Gmode:
          grid = round(log(zones, M))
          
          print('grid: ',grid,"--> ", grid**(M),' < ',zones)
+         print('upper limit :', ulim, ulim**2)
 
          ########## Sample statistical moments ##############
 
          ctt, devt, St, Rt = stats(elems)
-         Se = cov(self.errs/devt,zeros(M), 1e0)
-
-         vlim   = vlim   * Se
+         Se = cov(self.errs/devt, zeros(M), 1e0)
+         
          minlim = minlim * Se
 
          print(Se)
@@ -219,7 +219,7 @@ class Gmode:
          groups_syntesis =["Clump   N                mean                      dev"]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
          report.append(" A.D.: "+str(devt))
-         report.append("Variance Limit: "+str(vlim))
+         report.append("Upper Limit: "+str(ulim))
          report.append(" Minimum Deviation: "+str(minlim))
          report.append(" Confidence level q1: "+str(scp_sts.norm.cdf(q1) - scp_sts.norm.cdf(-q1)))
          report.append('grid: '+str(grid)+"-->"+str(grid**(M))+'<'+str(zones))
@@ -239,7 +239,7 @@ class Gmode:
 
                report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
 
-               group, seed, report = classifying(q1, vlim, minlim, grid, design, array(elems), devt, report)
+               group, seed, report = classifying(q1, ulim, minlim, grid, design, array(elems), devt, report)
 
                Na = len(group)
 
@@ -268,6 +268,8 @@ class Gmode:
                         #report.append("Statistical Significance")
                         report.append("\nC.T.: "+l_to_s(all_stats_groups[-1][0])+"\nA.D.: "+l_to_s(all_stats_groups[-1][1])+ \
                                         "\nSize: "+str(Na)+"       Left: "+str(N)+"\n")
+                        
+                        report.append("Cov. Matrix: \n"+str(all_stats_groups[-1][2]))
 
                         groups_syntesis.append("T"+str(Nc)+3*" "+str(Na)+3*" "+l_to_s(all_stats_groups[-1][0])+3*" "+l_to_s(all_stats_groups[-1][1]))
      
@@ -449,10 +451,10 @@ if __name__ == '__main__':
   
    gmode  = Gmode()
    load   = gmode.LoadData()
-   samp   = gmode.LoadClump()
+   #samp   = gmode.LoadClump()
    run    = gmode.Run()
-   ex     = gmode.Extension()
    ev     = gmode.Evaluate()
+   #ex     = gmode.Extension()
    col    = gmode.ClassificationPerID()
    end    = gmode.TimeIt()
    classf = gmode.Classification()

@@ -117,7 +117,7 @@ def G(N, f, X, ct, iS):
     elif aall(N*f >= 30e0) and aall(N*f <= 100e0):
        return ((z2/f)**(1e0/3) - (1e0 - (2e0/9)*f))/sqrt((2e0/9)*f)
     
-    elif aall(N*f < 30):
+    elif aall(N*f < 30e0):
        return 9e9
 
 #
