@@ -96,10 +96,12 @@ class Gmode:
             minlim     = arg["minlim"]
             self.name  = arg["name"]
 
-         if ulim != 1e0:
+         if ulim != 1e0 and minlim == 1e0:
              self.label = 'q'+str(q1)+'_u'+str(ulim)+'_'+self.name
-         elif minlim != 1e0:
+         elif minlim != 1e0 and ulim == 1e0:
              self.label = 'q'+str(q1)+'_m'+str(minlim)+'_'+self.name
+         elif ulim != 1e0 and minlim != 1e0:
+             self.label = 'q'+str(q1)+'_u'+str(ulim)+'_m'+str(minlim)+'_'+self.name
          else:
              self.label = 'q'+str(q1)+'_'+self.name
 
@@ -302,7 +304,7 @@ class Gmode:
 
          report.append("######################### Excluded ###############################")
          report.append(" Excluded Sample Size: "+str(len(excluded)))
-
+         print(" Excluded Sample Size: ",len(excluded))
          # Setting in self
 
          self.t0 = t0
@@ -401,7 +403,7 @@ class Gmode:
          design     = self.design
          uniq_id    = self.uniq_id
          
-         [[writing(str('{0:7} {1:>10} {2:7} T'+str(n+1)+'\n').format(ind,design[ind],uniq_id[ind])) for ind in self.all_groups[n]] for n in range(len(self.all_groups))]
+         [[writing(str('{0:7} {1:>10} {2:7} T'+str(n+1)+'\n').format(ind,design[ind],uniq_id[ind])) for ind in all_groups[n]] for n in range(len(all_groups))]
          self.clasf.close()   
 
      def ClassificationPerID(self):

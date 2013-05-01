@@ -11,11 +11,11 @@ from barycenter import barycenter_hist, barycenter_density
 #from plot_module import plot_group, plot_distribution
 from file_module import l_to_s
 from itertools import imap
-from numpy import array, sqrt, amax, amin, eye, ndenumerate, diagonal
+from numpy import sqrt, amax, amin, eye, ndenumerate, diagonal
 from numpy import any as aany
 from numpy import sum as asum
 from numpy import round as arround
-from plot_module import plot_clump
+#from plot_module import plot_clump
   
 ############ Neighboring Central Method: Recognition of Classes and Classification ###########
  
@@ -44,12 +44,12 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, report):
 # ______________________________CLASSIFICATION__________________________________
 
     i = 0
-    Rg, Na_prior  = eye(M), Na
+    Rg, Na_prior, Na_prior02  = eye(M), Na, Na
     
     #make_dir(pathjoin("TESTS",label,"plots","Clump"+str(Nc),""))
 
-    #(round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior) (round(Rg,6) != round(R_prior,6) and Na != Na_prior)
-    while (i == 0 or (round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior)) and i < 30 and Na > 2:
+    #(round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior) (round(Rg,6) != round(R_prior,6) and Na != Na_prior and Na != Na_prior02)
+    while (i == 0 or (round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior and Na != Na_prior02)) and i < 50 and Na > 2:
 
           R_prior = Rg
 
@@ -58,6 +58,7 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, report):
           ctg, devg, Sg, Rg = stats(data[group])
 
           Na_prior = Na
+          Na_prior02 = Na_prior
           
 # Replace lower deviations than minimal limit:
 

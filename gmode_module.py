@@ -13,7 +13,7 @@ from numpy import sqrt, array, eye, matrix, dot, diagonal, diagflat, median, fab
 from numpy import all as aall
 from numpy import sum as asum
 from numpy.linalg.linalg import LinAlgError
-from numpy.linalg import det 
+#from numpy.linalg import det 
 from itertools import product, chain
 from collections import deque
 #import median_stats as md_sts
