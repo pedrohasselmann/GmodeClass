@@ -57,8 +57,8 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, report):
 
           ctg, devg, Sg, Rg = stats(data[group])
 
-          Na_prior = Na
           Na_prior02 = Na_prior
+          Na_prior   = Na
           
 # Replace lower deviations than minimal limit:
 
