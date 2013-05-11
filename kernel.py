@@ -68,14 +68,6 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, report):
                     Sg[n,n] = minlim[n,n]
                     devg[n] = sqrt(minlim[n,n])
 
-# Replace deviations over upper limit:
-          if ulim < 1e0:
-             for n, S in ndenumerate(Sg):
-                 if S > ulim**2:
-                    Sg[n] = ulim**2
-             
-             devg = sqrt(diagonal(Sg))
-
           #plot_clump(i+1, [ctg*devt, devg*devt, Rg], elems[group], pathjoin(label,"plots","Clump"+str(Nc)), lim=[0.2,1.8], norm=[1,1e0], axis=[0.36,0.47,0.62,0.75,0.89])
              
 
@@ -93,6 +85,11 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, report):
           report.append("Run "+str(i)+" Size: "+str(Na)+" A.D.: "+l_to_s(arround(devg, 3))+"\nf: "+str(f)+"\n")
           #report.append("Cov. Matrix : \n"+str(Sg))
 
+# Once upper limit is reached the iteration is haulted.
+          if i != 0 and ulim < 1e0:
+             if aany(devg >= ulim):
+                return group, seed, report
+          
           i += 1
 
     return group, seed, report

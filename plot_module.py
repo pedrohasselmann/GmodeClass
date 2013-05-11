@@ -42,7 +42,7 @@ def plot_distribution(data,*zones):
         
     plt.show()
 
-def plot_map(Nc, clump, seed, data, link, lbl=['R_u','R_r','R_i','R_z'], lim=[0.6, 1.8]):
+def plot_map(Nc, clump, seed, data, link, lbl=['R_u','R_r','R_i','R_z'], lim=[0.5, 1.8]):
     
     plt.figure(figsize=(6,10),dpi=60)
     
@@ -58,7 +58,7 @@ def plot_map(Nc, clump, seed, data, link, lbl=['R_u','R_r','R_i','R_z'], lim=[0.
         plt.subplot(i)
 
         plt.hexbin(data[:,n-1],data[:,n],gridsize=200,bins='log',mincnt=1)
-        plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go')
+        if seed.size != 0: plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go')
         plt.xlim(lim[0], lim[1])
         plt.ylim(lim[0], lim[1])
         if lbl != None: 

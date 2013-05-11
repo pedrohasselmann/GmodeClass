@@ -30,10 +30,10 @@ def main():
     import optparse
 
     parser = optparse.OptionParser()
-    parser.add_option('-i','--in', dest="arq", default=pathjoin('Barucci_test','Birlan_sample.dat'), type="str", help="File name and path")
+    parser.add_option('-i','--in', dest="arq", default=pathjoin('Barucci_test','Birlan_sample.dat'), type="str", help="path/to/file")
     parser.add_option('--q1', action="store", dest="q1", default=2.5, type="float", help="Confidence level parameter 1")
     parser.add_option('--q2', action="store", dest="q2", default=2.5, type="float", help="Confidence level parameter 2")
-    parser.add_option('-z','--zones', action="store", dest="zones", default=1, type="int", help="Number of zones")
+    parser.add_option('-g','--grid', action="store", dest="grid", default=10, type="int", help="Grid")
     parser.add_option('-u','--ulim', action="store", dest="ulim", default=1e0, type="float", help="Limited Deviation")
     parser.add_option('-m','--minlim', action="store", dest="minlim", default=1e0, type="float", help="Minimum Deviation")
     parser.add_option('-n','--name', action="store", dest="name", default='birlan', type="str", help="Label for output customization")
@@ -59,17 +59,18 @@ class Gmode:
 
      __version__ = 4.0
 
-     def __str__(self):
-         return ' #########################################################################################################\n   \
-                  ################ Statistical Classification Method G-mode - version 4.0 for Python 2.7.2 ################\n   \
-                  ################         Program Developer: Pedro Henrique A Hasselmann                  ################\n   \
-                  ################       Method Developer: A. I. Gavrishin and A. Coradini                 ################\n   \
-                  #########################################################################################################\n   \
-                  WARNING: Minimal python packages dependencies: Numpy 1.5, Scipy 0.9, matplotlib 1.0.1\n                       \
-                  The input file must be formatted as --> Designation / unique ID / variables / errors \n '
-
      def __init__(self):
 
+         print( \
+'#########################################################################################################\n \
+################ Statistical Classification Method G-mode - version 4.0 for Python 2.7.2 ################\n \
+################         Program Developer: Pedro Henrique A Hasselmann                  ################\n \
+################       Method Developer: A. I. Gavrishin and A. Coradini                 ################\n \
+#########################################################################################################\n \
+WARNING: Minimal python packages dependencies: Numpy 1.5, Scipy 0.9, matplotlib 1.0.1\n \
+The input file must be formatted as --> Designation / unique ID / variables / errors \n ')
+
+     
          if __name__ == '__main__': self.Load()
 
          make_dir(pathjoin("TESTS",""))
@@ -86,22 +87,22 @@ class Gmode:
             q1        =  self.par.q1
             ulim      =  self.par.ulim
             minlim    =  self.par.minlim
-            self.name =  self.par.name
+            name      =  self.par.name 
 
          else:
             print("imported")
 
-            q1         = arg["q1"]
-            ulim       = arg["ulim"]
-            minlim     = arg["minlim"]
-            self.name  = arg["name"]
+            q1         = arg["q1"]      or self.q1
+            ulim       = arg["ulim"]    or self.ulim
+            minlim     = arg["minlim"]  or self.mlim
+            name       = arg["name"]    or self.name
 
          if ulim != 1e0 and minlim == 1e0:
-             self.label = 'q'+str(q1)+'_u'+str(ulim)+'_'+self.name
+             self.label = 'q'+str(q1)+'_u'+str(ulim)+'_'+name
          elif minlim != 1e0 and ulim == 1e0:
-             self.label = 'q'+str(q1)+'_m'+str(minlim)+'_'+self.name
+             self.label = 'q'+str(q1)+'_m'+str(minlim)+'_'+name
          elif ulim != 1e0 and minlim != 1e0:
-             self.label = 'q'+str(q1)+'_u'+str(ulim)+'_m'+str(minlim)+'_'+self.name
+             self.label = 'q'+str(q1)+'_u'+str(ulim)+'_m'+str(minlim)+'_'+name
          else:
              self.label = 'q'+str(q1)+'_'+self.name
 
@@ -123,7 +124,7 @@ class Gmode:
          if len(arg) == 0:
             filename  = self.par.arq
          else:
-            filename  = arg["file"]
+            filename  = arg["file"] or self.in
 
          from operator import getitem, itemgetter
 
@@ -139,35 +140,8 @@ class Gmode:
          #self.errs   = [array(item[6:], dtype=float64) for item in data]
 
          self.indexs = range(len(self.design))
-
-     ############################ Load Sample ####################################
-
-     def LoadClump(self,**arg):
-
-         if len(arg) == 0:
-            T       = self.par.clump
-            test    = self.par.test
-         else:
-            T       = arg["clump"]
-            test    = arg["test"]
-
-         if T is not None and test is not None:
-            mypath = pathjoin("TESTS",test)
-            ind, tax = loadtxt(pathjoin(mypath,'gmode1_'+test+'.dat'), unpack=True, dtype=str, usecols=[0,-1])
-
-            uniq_id, design, elems, indexs = list(), list(), list(), list()
-            for i, classify in zip(ind, tax):
-                i = int(i)
-                if classify == T:
-                   uniq_id.append(self.uniq_id[i])
-                   design.append(self.design[i])
-                   elems.append(self.elems[i])
-
-            # setting in self
-            self.uniq_id = uniq_id
-            self.design  = design
-            self.elems   = elems
-            self.indexs  = range(len(self.design))
+         
+         plot_map(0, [], [], self.elems, self.label)
 
      ########################### START PROCEDURE #################################
 
@@ -179,17 +153,19 @@ class Gmode:
          if len(arg) == 0:
 
             q1      = self.par.q1
-            zones   = self.par.zones
+            grid    = self.par.grid
             ulim    = self.par.ulim
             minlim  = self.par.minlim
 
          else:
 
-            q1      = arg['q1']
-            zones   = arg['zones']
-            ulim    = arg['ulim']
-            minlim  = arg['minlim']
+            q1      = arg['q1']     or self.q1
+            grid    = arg['grid']   or self.grid
+            ulim    = arg['ulim']   or self.ulim
+            minlim  = arg['minlim'] or self.minlim
             self.Load(**arg)
+
+         #################################################   
          
          elems, design, indexs, excluded = list(), list(), list(), list()
          
@@ -202,15 +178,12 @@ class Gmode:
 
          N=len(elems)    # Sample size
          M=len(elems[0]) # Variable size
-
-         # Find best number of grid:
-         grid = round(log(zones, M))
          
-         print('grid: ',grid,"--> ", grid**(M),' < ',zones)
+         print('grid: ',grid,"--> ", grid**(M))
          print('upper limit :', ulim, ulim**2)
 
-         ########## Sample statistical moments ##############
-
+         ##################################################
+         
          ctt, devt, St, Rt = stats(elems)
          Se = cov(self.errs/devt, zeros(M), 1e0)
          
@@ -218,6 +191,8 @@ class Gmode:
 
          print(Se)
 
+         ################# Write Into Log #################
+         
          groups_syntesis =["Clump   N                mean                      dev"]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
          report.append(" A.D.: "+str(devt))
@@ -225,15 +200,13 @@ class Gmode:
          report.append(" Minimum Deviation: "+str(minlim))
          report.append(" Confidence level q1: "+str(scp_sts.norm.cdf(q1) - scp_sts.norm.cdf(-q1)))
          report.append('grid: '+str(grid)+"-->"+str(grid**(M))+'<'+str(zones))
-
-         ######################################################
          
          all_groups   = deque()
          all_stats_groups = deque()
 
-         report.append('############################ Part I : Indentifying Classes and Classifying ################################## \n ')
+         report.append('############################ Part I : Recognize Clusters and Classify ################################## \n ')
 
-         ################### Indentify Groups #################
+         ################### Cluster Recognition #################
                
          Nc = 0
          while Nc == 0 or N >= (M - 1):
@@ -317,12 +290,13 @@ class Gmode:
          
 
      ################### Evaluate Variables and discriminate it #####################
+
      def Evaluate(self,**arg):
 
          if len(arg) == 0:
             q2    =  self.par.q1
          else:
-            q2    = arg["q2"]
+            q2    = arg["q2"] or self.q2
 
          if len(self.all_groups) > 1:
 
@@ -365,7 +339,7 @@ class Gmode:
          if len(arg) == 0:
             q1      = self.par.q1
          else:
-            q1      = arg['q1']
+            q1      = arg['q1'] or self.q1
 
          all_groups = self.all_groups
          excluded   = self.excluded
@@ -453,7 +427,6 @@ if __name__ == '__main__':
   
    gmode  = Gmode()
    load   = gmode.LoadData()
-   #samp   = gmode.LoadClump()
    run    = gmode.Run()
    ev     = gmode.Evaluate()
    #ex     = gmode.Extension()
@@ -462,4 +435,4 @@ if __name__ == '__main__':
    classf = gmode.Classification()
    log    = gmode.WriteLog()
    plot   = gmode.Plot() #lim=[0,10], norm=None, axis=[1,2])
-   dendo  = gmode.Dendrogram()
+   dendro = gmode.Dendrogram()
