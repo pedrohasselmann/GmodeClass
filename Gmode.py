@@ -57,7 +57,7 @@ def make_dir(pth):
 
 class Gmode:
 
-     __version__ = 4.0
+     __version__ = 1.0
 
      def __init__(self):
 
@@ -193,9 +193,9 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
          ################# Write Into Log #################
          
-         groups_syntesis =["Clump   N                mean                      dev"]
+         groups_syntesis =["Clump   N                median                      st. dev."]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
-         report.append(" A.D.: "+str(devt))
+         report.append(" S.D.: "+str(devt))
          report.append("Upper Limit: "+str(ulim))
          report.append(" Minimum Deviation: "+str(minlim))
          report.append(" Confidence level q1: "+str(scp_sts.norm.cdf(q1) - scp_sts.norm.cdf(-q1)))
@@ -241,7 +241,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
                         N = len(indexs)
   
                         #report.append("Statistical Significance")
-                        report.append("\nC.T.: "+l_to_s(all_stats_groups[-1][0])+"\nA.D.: "+l_to_s(all_stats_groups[-1][1])+ \
+                        report.append("\nC.T.: "+l_to_s(all_stats_groups[-1][0])+"\nS.D.: "+l_to_s(all_stats_groups[-1][1])+ \
                                         "\nSize: "+str(Na)+"       Left: "+str(N)+"\n")
                         
                         report.append("Cov. Matrix: \n"+str(all_stats_groups[-1][2]))
@@ -418,8 +418,8 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      def TimeIt(self):
          # Total processing time:
          t = (time() - self.t0)/60e0
-         self.report.append('general processing time: '+str(t)+' min')
-         print('general processing time: '+str(t)+' min')
+         self.report.append('total processing time: '+str(t)+' min')
+         print('total processing time: '+str(t)+' min')
 
 # END of the method
 

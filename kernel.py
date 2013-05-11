@@ -82,7 +82,7 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, report):
 
           Na = len(group)
 
-          report.append("Run "+str(i)+" Size: "+str(Na)+" A.D.: "+l_to_s(arround(devg, 3))+"\nf: "+str(f)+"\n")
+          report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(devg, 3))+"\nf: "+str(f)+"\n")
           #report.append("Cov. Matrix : \n"+str(Sg))
 
 # Once upper limit is reached the iteration is haulted.
