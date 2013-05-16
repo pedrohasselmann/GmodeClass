@@ -107,10 +107,12 @@ def G(N, f, X, ct, iS):
     ''' G parameter --> Transforms a X2 estimator to a Gaussian estimator '''
 
     #z2  = iR * asum( ( (X - ct) / (iS + TINY) )**2  )     # Z2 estimator
-      
+    
+    # Mahalanobis distance estimator:
     X = X - ct
     z2 = fabs( X * ravel( dot(iS, X ) ) )
 
+    # G transformation:
     if aall(N*f > 100e0):
        return  sqrt(2e0*z2) -  sqrt(2e0*f - 1e0)
 

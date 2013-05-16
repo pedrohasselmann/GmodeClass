@@ -124,7 +124,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          if len(arg) == 0:
             filename  = self.par.arq
          else:
-            filename  = arg["file"] or self.in
+            filename  = arg["file"] or self.filename
 
          from operator import getitem, itemgetter
 
@@ -140,6 +140,8 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          #self.errs   = [array(item[6:], dtype=float64) for item in data]
 
          self.indexs = range(len(self.design))
+         
+         print(len(set(self.design)))
          
          plot_map(0, [], [], self.elems, self.label)
 
@@ -193,7 +195,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
          ################# Write Into Log #################
          
-         groups_syntesis =["Clump   N                median                      st. dev."]
+         gmode_clusters =["Clump   N                median                      st. dev."]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
          report.append(" S.D.: "+str(devt))
          report.append("Upper Limit: "+str(ulim))
@@ -201,8 +203,8 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          report.append(" Confidence level q1: "+str(scp_sts.norm.cdf(q1) - scp_sts.norm.cdf(-q1)))
          report.append('grid: '+str(grid)+"-->"+str(grid**(M))+'<'+str(zones))
          
-         all_groups   = deque()
-         all_stats_groups = deque()
+         cluster_members   = deque()
+         cluster_stats     = deque()
 
          report.append('############################ Part I : Recognize Clusters and Classify ################################## \n ')
 
@@ -214,49 +216,49 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
                report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
 
-               group, seed, report = classifying(q1, ulim, minlim, grid, design, array(elems), devt, report)
+               clump, seed, report = classifying(q1, ulim, minlim, grid, design, array(elems), devt, report)
 
-               Na = len(group)
+               Na = len(cluster)
 
                if Na > 3 or Na >= len(seed) and Na != 0:
                         print("Barycenter size: ",len(seed))
                         print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
                         try:
-                          plot_map(Nc, group, seed, elems, self.label) #, lbl=['1','2'], lim=[0,10])
+                          plot_map(Nc, clump, seed, elems, self.label) #, lbl=['1','2'], lim=[0,10])
                         except IndexError:
                           pass
  
-                        # Save group member indexes
-                        all_groups.append(map(lambda i: indexs[i], group))
+                        # Save cluster member indexes
+                        cluster_members.append(map(lambda i: indexs[i], clump))
 
-                        # save group statistics
-                        all_stats_groups.append(shortcut(group, elems))
+                        # save cluster statistics
+                        cluster_stats.append(shortcut(clump, elems))
 
                         # Exclude group members from the sample:
-                        for i in group:  elems[i], design[i], indexs[i] = None, None, None
+                        for i in clump:  elems[i], design[i], indexs[i] = None, None, None
                         elems  = filter(lambda x: x!=None, elems)
                         design = filter(lambda x: x!=None, design)
                         indexs = filter(lambda x: x!=None, indexs)
                         N = len(indexs)
   
                         #report.append("Statistical Significance")
-                        report.append("\nC.T.: "+l_to_s(all_stats_groups[-1][0])+"\nS.D.: "+l_to_s(all_stats_groups[-1][1])+ \
+                        report.append("\nC.T.: "+l_to_s(cluster_stats[-1][0])+"\nS.D.: "+l_to_s(cluster_stats[-1][1])+ \
                                         "\nSize: "+str(Na)+"       Left: "+str(N)+"\n")
                         
-                        report.append("Cov. Matrix: \n"+str(all_stats_groups[-1][2]))
+                        report.append("Cov. Matrix: \n"+str(cluster_stats[-1][2]))
 
-                        groups_syntesis.append("T"+str(Nc)+3*" "+str(Na)+3*" "+l_to_s(all_stats_groups[-1][0])+3*" "+l_to_s(all_stats_groups[-1][1]))
+                        groups_syntesis.append("T"+str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
      
                else:
                         Nc -= 1
-                        # Exclude group members from the sample:
+                        # Exclude clump members from the sample:
                         if len(seed) > 0 and Na > 0:
-                           report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], group)))
+                           report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], clump)))
                                         
-                           excluded.extend(map(lambda i: indexs[i], group))                         
+                           excluded.extend(map(lambda i: indexs[i], clump))                         
                            
-                           for i in group:  elems[i], design[i], indexs[i] = None, None, None
+                           for i in clump:  elems[i], design[i], indexs[i] = None, None, None
 
                         elif len(seed) > 0 and Na == 0:
                            report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], seed)))
@@ -278,14 +280,14 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          report.append("######################### Excluded ###############################")
          report.append(" Excluded Sample Size: "+str(len(excluded)))
          print(" Excluded Sample Size: ",len(excluded))
+         
          # Setting in self
-
          self.t0 = t0
          self.t1  = time()
          self.report = report
          self.groups_syntesis = groups_syntesis
-         self.all_groups = all_groups
-         self.all_stats_groups = all_stats_groups
+         self.cluster_members = cluster_members
+         self.cluster_stats = cluster_stats
          self.excluded  = excluded
          
 
@@ -298,11 +300,11 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          else:
             q2    = arg["q2"] or self.q2
 
-         if len(self.all_groups) > 1:
+         if len(self.cluster_members) > 1:
 
             from eval_variables import verifying
 
-            all_groups = self.all_groups
+            cluster_members = self.cluster_members
             elems      = self.elems
             #errs      = self.errs
             report     = self.report
@@ -311,7 +313,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
             report.append("Confidence level q2: "+str(scp_sts.norm.cdf(q2) - scp_sts.norm.cdf(-q2)))
 
-            d2, Gc, D2 = verifying(q2, all_groups, array(elems)/(stats(elems)[1])) 
+            d2, Gc, D2 = verifying(q2, cluster_members, array(elems)/(stats(elems)[1])) 
 
             report.append('Matrix D2: \n'+pretty_print(D2))
 
@@ -326,8 +328,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
                    j += 1
             
             # setting in self
-            
-            self.d2 = d2
+
             self.Gc = Gc
             self.D2 = D2
 
@@ -341,24 +342,24 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          else:
             q1      = arg['q1'] or self.q1
 
-         all_groups = self.all_groups
+         cluster_members = self.cluster_members
          excluded   = self.excluded
          elems      = self.elems
          sample = map(lambda j: elems[j], excluded)
          
          N = deque()
 
-         for n, st in enumerate(self.all_stats_groups):
+         for n, st in enumerate(self.cluster_stats):
              iS = Invert(st[2]) #, Invert(st[3])
              f = free(st[3])
              #iR = f/st[1].size
              #iS = st[1]
              selected = filter(lambda x: x != None, \
-                               imap(lambda ind, y: hyp_test(len(all_groups[n]),q1,f,ind,y,st[0],iS), excluded, sample))
+                               imap(lambda ind, y: hyp_test(len(cluster_members[n]),q1,f,ind,y,st[0],iS), excluded, sample))
 
              if len(selected) != 0: 
                 plot_map(1001+n, excluded, selected, elems, self.label)
-                all_groups[n].extend(selected)
+                cluster_members[n].extend(selected)
                 N.extend(selected)
          
          N = set(N)
@@ -372,12 +373,12 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
      # Write classifications into a file:
      def Classification(self):
-         all_groups = self.all_groups
+         cluster_members = self.cluster_members
          writing    = self.clasf.write
          design     = self.design
          uniq_id    = self.uniq_id
          
-         [[writing(str('{0:7} {1:>10} {2:7} T'+str(n+1)+'\n').format(ind,design[ind],uniq_id[ind])) for ind in all_groups[n]] for n in range(len(all_groups))]
+         [[writing(str('{0:7} {1:>10} {2:7} T'+str(n+1)+'\n').format(ind,design[ind],uniq_id[ind])) for ind in cluster_members[n]] for n in range(len(cluster_members))]
          self.clasf.close()   
 
      def ClassificationPerID(self):
@@ -385,7 +386,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
          text = deque()
          
-         catalogue = CollapseClassification(self.all_groups,self.design)
+         catalogue = CollapseClassification(self.cluster_members,self.design)
 
          form = "{0:>10} {1}".format
          [text.append(form(each,l_to_s(catalogue[each]))) for each in catalogue.keys()]
@@ -405,10 +406,10 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      def Plot(self, lim=[0.2,1.8], norm=[1, 1e0], axis=[0.36,0.47,0.62,0.75,0.89]):
          from plot_module import plot_clump
          
-         for n in xrange(len(self.all_groups)):
-             elems_group = array(map(lambda j: self.elems[j], self.all_groups[n]))
+         for n in xrange(len(self.cluster_members)):
+             elems_group = array(map(lambda j: self.elems[j], self.cluster_members[n]))
              
-             plot_clump(n+1, self.all_stats_groups[n], elems_group, self.label, lim, norm, axis)
+             plot_clump(n+1, self.cluster_stats[n], elems_group, self.label, lim, norm, axis)
          
      def Dendrogram(self):
          from plot_module import dendrogram
