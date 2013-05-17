@@ -8,7 +8,6 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 
 ##### IMPORT ######
 
-from os import path
 import warnings
 from numpy import sqrt, array, eye, matrix, dot, diagonal, diagflat, median, fabs, corrcoef, isnan, ravel
 from numpy import all as aall
@@ -17,15 +16,7 @@ from numpy.linalg.linalg import LinAlgError
 #from numpy.linalg import det 
 from itertools import product, chain
 from collections import deque
-#import median_stats as md_sts
-#from subroutines_gmode import pearson_r
 
-from time import time
-t0= time()
-
-pathjoin = path.join
-#median = md_sts.median
-#mad    = md_sts.median_abs_dev
 
 TINY = 1e-9
 
