@@ -14,6 +14,8 @@
 GmodeClass
 ----------
 
+.. class:: abstract
+
    The original G-mode was a clustering method developed by A. I. Gavrishin in the 70's for geochemical classification of rocks, 
    but was also applied to asteroid photometry, cosmic rays, lunar sample and planetary science spectroscopy data. 
    In this work, we used an adapted version to classify the asteroid photometry from SDSS Moving Objects Catalog. 
@@ -58,9 +60,9 @@ the second evaluates each variable in the classification process.
 Method Description
 ------------------
 
-Here_ .
+Here_.
 
-.. _Here: http://github.com/pedrohasselmann/scipy_proceedings/tree/2013/papers/pedro_hasselmann
+.. _Here: http://github.com/pedrohasselmann/scipy_proceedings/blob/2013/papers/pedro_hasselmann/gmode_scipy2013.rst
 
 References
 ----------
