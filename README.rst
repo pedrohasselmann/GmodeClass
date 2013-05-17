@@ -1,9 +1,18 @@
 :author: Pedro Henrique Hasselmann
-:email: hasselmann at on dot br
+:email: hasselmann@on.br
 :institution: Observatorio Nacional, Rio de Janeiro, Brazil
 
+:author: Jorge Márcio Carvano
+:email: carvano@on.br
+:institution: Observatorio Nacional, Rio de Janeiro, Brazil
+
+:author: Daniela Lazzaro
+:email: lazzaro@on.br
+:institution: Observatorio Nacional, Rio de Janeiro, Brazil
+
+----------
 GmodeClass
-==========
+----------
 
    The original G-mode was a clustering method developed by A. I. Gavrishin in the 70's for geochemical classification of rocks, 
    but was also applied to asteroid photometry, cosmic rays, lunar sample and planetary science spectroscopy data. 
@@ -46,6 +55,12 @@ robust set of clusters and optimize the processing time. The coding was performe
 The algorithm can be briefly summarized by two parts: the first one is the cluster recognition and 
 the second evaluates each variable in the classification process.
 
+Method Description
+------------------
+
+Here_ .
+
+.. _Here: http://github.com/pedrohasselmann/scipy_proceedings/tree/2013/papers/pedro_hasselmann
 
 References
 ----------
