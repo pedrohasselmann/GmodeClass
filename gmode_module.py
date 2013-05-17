@@ -9,6 +9,7 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 ##### IMPORT ######
 
 from os import path
+import warnings
 from numpy import sqrt, array, eye, matrix, dot, diagonal, diagflat, median, fabs, corrcoef, isnan, ravel
 from numpy import all as aall
 from numpy import sum as asum
@@ -47,7 +48,10 @@ def pearson_R(X):
     return r2
 
 def Robust_R(X, ct, dev):
+  
     ''' Shevlyakov 1997 - On a Robust Estimation of Correlation Coeficient'''
+    warnings.simplefilter("ignore")
+    
     X = (X - ct)/(dev + TINY)
     r2 = deque()
     
@@ -76,7 +80,7 @@ def cov(X, ct, K=1.4826):
     
 
 def stats(X):
-               
+
     #X   = array(X)
     ct  = median(X, axis=0)      
     S   = cov(X, ct)

@@ -63,7 +63,7 @@ class Gmode:
 
          print( \
 '#########################################################################################################\n \
-################ Statistical Classification Method G-mode - version 4.0 for Python 2.7.2 ################\n \
+################ Statistical Classification Method G-mode - version 1.0 for Python 2.7   ################\n \
 ################         Program Developer: Pedro Henrique A Hasselmann                  ################\n \
 ################       Method Developer: A. I. Gavrishin and A. Coradini                 ################\n \
 #########################################################################################################\n \
@@ -141,7 +141,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
          self.indexs = range(len(self.design))
          
-         print(len(set(self.design)))
+         #print(len(set(self.design)))
          
          plot_map(0, [], [], self.elems, self.label)
 
@@ -201,7 +201,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          report.append("Upper Limit: "+str(ulim))
          report.append(" Minimum Deviation: "+str(minlim))
          report.append(" Confidence level q1: "+str(scp_sts.norm.cdf(q1) - scp_sts.norm.cdf(-q1)))
-         report.append('grid: '+str(grid)+"-->"+str(grid**(M))+'<'+str(zones))
+         report.append('grid: '+str(grid)+" --> "+str(grid**(M)))
          
          cluster_members   = deque()
          cluster_stats     = deque()
@@ -218,7 +218,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
                clump, seed, report = classifying(q1, ulim, minlim, grid, design, array(elems), devt, report)
 
-               Na = len(cluster)
+               Na = len(clump)
 
                if Na > 3 or Na >= len(seed) and Na != 0:
                         print("Barycenter size: ",len(seed))
@@ -248,7 +248,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
                         
                         report.append("Cov. Matrix: \n"+str(cluster_stats[-1][2]))
 
-                        groups_syntesis.append("T"+str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
+                        gmode_clusters.append("T"+str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
      
                else:
                         Nc -= 1
@@ -285,7 +285,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          self.t0 = t0
          self.t1  = time()
          self.report = report
-         self.groups_syntesis = groups_syntesis
+         self.gmode_clusters = gmode_clusters
          self.cluster_members = cluster_members
          self.cluster_stats = cluster_stats
          self.excluded  = excluded
@@ -399,7 +399,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      def WriteLog(self):
          
          WriteIt(self.log,self.report)
-         WriteIt(self.briefing,self.groups_syntesis)
+         WriteIt(self.briefing,self.gmode_clusters)
 
      ################### Plot #######################
      
