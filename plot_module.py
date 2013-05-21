@@ -137,40 +137,7 @@ def dendrogram(D,label):
     Z1 = sch.dendrogram(Y, orientation='right',labels=lbl)
     ax1.set_xticks([])
 
-
-    plt.savefig(pathjoin("TESTS",label,"plots",'dendrogram_'+label+'.png'),format='png')
-
-def dendrogram_cmap(D, label):
-    ''' Plot dendrogram between classes and make a color map for distance matrix'''
-  
-    import scipy.cluster.hierarchy as sch
-
-    lbl = ['T'+str(n+1) for n in xrange(D.shape[0])]
-
-    # Compute and plot first dendrogram.
-    fig = plt.figure(figsize=(8,8),dpi=80)
-    ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
-    Y = sch.complete(D)
-    Z1 = sch.dendrogram(Y, orientation='right',labels=lbl)
-    ax1.set_xticks([])
-
-    # Compute and plot second dendrogram.
-    ax2 = fig.add_axes([0.3,0.71,0.6,0.2])
-    Y = sch.single(D)
-    Z2 = sch.dendrogram(Y)
-    ax2.set_xticks([])
-    ax2.set_yticks([])
-
-    # Plot distance matrix.
-    axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
-    idx1 = Z1['leaves']
-    idx2 = Z2['leaves']
-    D = D[idx1,:]
-    D = D[:,idx2]
-    im = axmatrix.matshow(D, aspect='auto', origin='lower', cmap=plt.cm.Greys)
-    axmatrix.set_xticks([])
-    axmatrix.set_yticks([])
-
-    plt.savefig(pathjoin("TESTS",label,"plots",'dendrogram_cmap_'+label+'.png'),format='png')
+    plt.show()
+    #plt.savefig(pathjoin("TESTS",label,"plots",'dendrogram_'+label+'.png'),format='png')
 
 # END

@@ -26,23 +26,21 @@ pathjoin = os.path.join
 # *g --> group/cluster statistic
 
 ########################## Shell Parameters ##################################
+
 def main():
     import optparse
 
     parser = optparse.OptionParser()
-    parser.add_option('-i','--in', dest="arq", default=pathjoin('Barucci_test','Birlan_sample.dat'), type="str", help="path/to/file")
+    parser.add_option('-i','--in', dest="filename", default=pathjoin('Barucci_test','Birlan_sample.dat'), type="str", help="path/to/file")
     parser.add_option('--q1', action="store", dest="q1", default=2.5, type="float", help="Confidence level parameter 1")
     parser.add_option('--q2', action="store", dest="q2", default=2.5, type="float", help="Confidence level parameter 2")
-    parser.add_option('-g','--grid', action="store", dest="grid", default=10, type="int", help="Grid")
+    parser.add_option('-g','--grid', action="store", dest="grid", default=3, type="int", help="Grid")
     parser.add_option('-u','--ulim', action="store", dest="ulim", default=1e0, type="float", help="Limited Deviation")
-    parser.add_option('-m','--minlim', action="store", dest="minlim", default=1e0, type="float", help="Minimum Deviation")
+    parser.add_option('-m','--mlim', action="store", dest="mlim", default=1e0, type="float", help="Minimum Deviation")
     parser.add_option('-n','--name', action="store", dest="name", default='birlan', type="str", help="Label for output customization")
 
-    parser.add_option('-f','--from', action="store", dest="test", default=None, type="str")
-    parser.add_option('-c','--clump', action="store", dest="clump", default=None, type="str")
-
     par, remain = parser.parse_args()
-
+         
     return par
 
 def make_dir(pth):
@@ -62,49 +60,57 @@ class Gmode:
      def __init__(self):
 
          print( \
-'#########################################################################################################\n \
-################ Statistical Classification Method G-mode - version 1.0 for Python 2.7   ################\n \
-################         Program Developer: Pedro Henrique A Hasselmann                  ################\n \
-################       Method Developer: A. I. Gavrishin and A. Coradini                 ################\n \
-#########################################################################################################\n \
+' ######################################################################################\n \
+#######   G-mode Multivariate Clustering method - version 1.0 for Python 2.7   #######\n \
+#######         Program Developer: Pedro Henrique A Hasselmann                 #######\n \
+#######       Method Developer: A. I. Gavrishin and A. Coradini                #######\n \
+######################################################################################\n \
 WARNING: Minimal python packages dependencies: Numpy 1.5, Scipy 0.9, matplotlib 1.0.1\n \
 The input file must be formatted as --> Designation / unique ID / variables / errors \n ')
 
-     
-         if __name__ == '__main__': self.Load()
+         if __name__ == '__main__':
+            print("main")
+            par = main()
+
+            self.filename = par.filename
+            self.q1       = par.q1
+            self.q2       = par.q2
+            self.grid     = par.grid
+            self.ulim     = par.ulim
+            self.mlim     = par.mlim
+            self.name     = par.name
+
+            self.Load()
+
+         else:
+            print("imported")
 
          make_dir(pathjoin("TESTS",""))
 
      def Load(self,**arg):
 
-         self.unmeaning_var = list()
-
-         if __name__ == '__main__':
-            print("main")
-
-            self.par = main()
-
-            q1        =  self.par.q1
-            ulim      =  self.par.ulim
-            minlim    =  self.par.minlim
-            name      =  self.par.name 
+         if len(arg) == 0:
+         
+            q1    =  self.q1
+            ulim  =  self.ulim or 1e0
+            mlim  =  self.mlim or 1e0
+            name  =  self.name
 
          else:
-            print("imported")
 
-            q1         = arg["q1"]      or self.q1
-            ulim       = arg["ulim"]    or self.ulim
-            minlim     = arg["minlim"]  or self.mlim
-            name       = arg["name"]    or self.name
+            q1    = arg['q1']
+            ulim  = arg['ulim']   or 1e0
+            mlim  = arg['minlim'] or 1e0
+            name  = arg['name']
 
-         if ulim != 1e0 and minlim == 1e0:
-             self.label = 'q'+str(q1)+'_u'+str(ulim)+'_'+name
-         elif minlim != 1e0 and ulim == 1e0:
-             self.label = 'q'+str(q1)+'_m'+str(minlim)+'_'+name
-         elif ulim != 1e0 and minlim != 1e0:
-             self.label = 'q'+str(q1)+'_u'+str(ulim)+'_m'+str(minlim)+'_'+name
+         if ulim != 1e0 and mlim == 1e0:
+            self.label = 'q'+str(q1)+'_u'+str(ulim)+'_'+name
+         elif mlim != 1e0 and ulim == 1e0:
+            self.label = 'q'+str(q1)+'_m'+str(mlim)+'_'+name
+         elif ulim != 1e0 and mlim != 1e0:
+            self.label = 'q'+str(q1)+'_u'+str(ulim)+'_m'+str(mlim)+'_'+name
          else:
-             self.label = 'q'+str(q1)+'_'+self.name
+            self.label = 'q'+str(q1)+'_'+self.name
 
          mypath = pathjoin("TESTS",self.label)
          make_dir(mypath)
@@ -122,9 +128,9 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      def LoadData(self,**arg):
 
          if len(arg) == 0:
-            filename  = self.par.arq
+            filename  = self.filename
          else:
-            filename  = arg["file"] or self.filename
+            filename  = arg["file"]
 
          from operator import getitem, itemgetter
 
@@ -140,10 +146,6 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          #self.errs   = [array(item[6:], dtype=float64) for item in data]
 
          self.indexs = range(len(self.design))
-         
-         #print(len(set(self.design)))
-         
-         plot_map(0, [], [], self.elems, self.label)
 
      ########################### START PROCEDURE #################################
 
@@ -154,17 +156,20 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
          if len(arg) == 0:
 
-            q1      = self.par.q1
-            grid    = self.par.grid
-            ulim    = self.par.ulim
-            minlim  = self.par.minlim
+            if __name__ != '__main__': self.Load()
+            q1        =  self.q1
+            grid      =  self.grid
+            ulim      =  self.ulim or 1e0
+            minlim    =  self.mlim or 1e0
+            name      =  self.name
 
          else:
 
-            q1      = arg['q1']     or self.q1
-            grid    = arg['grid']   or self.grid
-            ulim    = arg['ulim']   or self.ulim
-            minlim  = arg['minlim'] or self.minlim
+            q1      = arg['q1']
+            grid    = arg['grid']
+            ulim    = arg['ulim']   or 1e0
+            minlim  = arg['minlim'] or 1e0
+            name    = arg['name']
             self.Load(**arg)
 
          #################################################   
@@ -206,6 +211,8 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          cluster_members   = deque()
          cluster_stats     = deque()
 
+         plot_map(0, [], [], elems, self.label) #, lbl=['1','2'], lim=[0,10])
+         
          report.append('############################ Part I : Recognize Clusters and Classify ################################## \n ')
 
          ################### Cluster Recognition #################
@@ -296,9 +303,9 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      def Evaluate(self,**arg):
 
          if len(arg) == 0:
-            q2    =  self.par.q1
+            q2    = self.q2
          else:
-            q2    = arg["q2"] or self.q2
+            q2    = arg["q2"]
 
          if len(self.cluster_members) > 1:
 
@@ -322,7 +329,6 @@ The input file must be formatted as --> Designation / unique ID / variables / er
                 report.append('\nMatrix Gc for variable '+str(i+1)+10*" "+' Weight: '+str(d2[i].sum()/d2.sum())+'\n'+pretty_print(Gc[i]))
 
                 if all(Gc[i] < q2):
-                   self.unmeaning_var.append(i)
                    report.append('\n Variable '+str(i+1)+' is statistically redundant.')
                    print('Variable '+str(i+1)+' is statistically redundant.')
                    j += 1
@@ -338,9 +344,9 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          from itertools import  imap
 
          if len(arg) == 0:
-            q1      = self.par.q1
+            q1   = self.q1
          else:
-            q1      = arg['q1'] or self.q1
+            q1   = arg['q1']
 
          cluster_members = self.cluster_members
          excluded   = self.excluded
@@ -374,9 +380,9 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      # Write classifications into a file:
      def Classification(self):
          cluster_members = self.cluster_members
-         writing    = self.clasf.write
-         design     = self.design
-         uniq_id    = self.uniq_id
+         writing         = self.clasf.write
+         design          = self.design
+         uniq_id         = self.uniq_id
          
          [[writing(str('{0:7} {1:>10} {2:7} T'+str(n+1)+'\n').format(ind,design[ind],uniq_id[ind])) for ind in cluster_members[n]] for n in range(len(cluster_members))]
          self.clasf.close()   
@@ -398,8 +404,8 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      # Write into a file:
      def WriteLog(self):
          
-         WriteIt(self.log,self.report)
-         WriteIt(self.briefing,self.gmode_clusters)
+         WriteIt(self.log,      self.report)
+         WriteIt(self.briefing, self.gmode_clusters)
 
      ################### Plot #######################
      
