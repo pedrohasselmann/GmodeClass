@@ -8,7 +8,6 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 
 from gmode_module import stats, hyp_test, Invert, free
 from barycenter import barycenter_hist, barycenter_density
-#from plot_module import plot_group, plot_distribution
 from file_module import l_to_s
 from itertools import imap
 from numpy import sqrt, amax, amin, eye, ndenumerate, diagonal

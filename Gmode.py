@@ -9,45 +9,21 @@
 # Escrevendo em python3 e usando python2.6:
 from __future__ import print_function, unicode_literals, absolute_import, division
 
-import os
+
+from os import path
 from time import time
+from support import make_dir
 from scipy import stats as scp_sts
 from collections import deque
-from numpy import array, zeros, genfromtxt, loadtxt, float64, all
+from numpy import array, zeros, genfromtxt, float64, all
 from gmode_module import stats, shortcut, Invert, hyp_test, free, cov
-from file_module import l_to_s, pretty_print, WriteIt 
-from plot_module import plot_map
+from file_module import l_to_s, pretty_print, WriteIt
 
-# Global variables:
-pathjoin = os.path.join
+pathjoin = path.join
 
 # *s --> Interable with more than one element
 # *t --> total sample statistic
-# *g --> group/cluster statistic
-
-########################## Shell Parameters ##################################
-
-def main():
-    import optparse
-
-    parser = optparse.OptionParser()
-    parser.add_option('-i','--in', dest="filename", default=pathjoin('Barucci_test','Birlan_sample.dat'), type="str", help="path/to/file")
-    parser.add_option('--q1', action="store", dest="q1", default=2.5, type="float", help="Confidence level parameter 1")
-    parser.add_option('--q2', action="store", dest="q2", default=2.5, type="float", help="Confidence level parameter 2")
-    parser.add_option('-g','--grid', action="store", dest="grid", default=3, type="int", help="Grid")
-    parser.add_option('-u','--ulim', action="store", dest="ulim", default=1e0, type="float", help="Limited Deviation")
-    parser.add_option('-m','--mlim', action="store", dest="mlim", default=1e0, type="float", help="Minimum Deviation")
-    parser.add_option('-n','--name', action="store", dest="name", default='birlan', type="str", help="Label for output customization")
-
-    par, remain = parser.parse_args()
-         
-    return par
-
-def make_dir(pth):
-    try:
-        os.mkdir(pth)
-    except OSError:
-        pass    
+# *g --> group/cluster statistic   
 
 ########################################################################
 ####################### Gmode Python Class #############################
@@ -69,6 +45,7 @@ WARNING: Minimal python packages dependencies: Numpy 1.5, Scipy 0.9, matplotlib 
 The input file must be formatted as --> Designation / unique ID / variables / errors \n ')
 
          if __name__ == '__main__':
+            from support import main
             print("main")
             par = main()
 
@@ -152,6 +129,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      def Run(self,**arg):
 
          from kernel import classifying
+         from plot_module import plot_map
          from math import log
 
          if len(arg) == 0:
@@ -211,7 +189,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          cluster_members   = deque()
          cluster_stats     = deque()
 
-         plot_map(0, [], [], elems, self.label) #, lbl=['1','2'], lim=[0,10])
+         plot_map(0, [], [], elems, self.label)
          
          report.append('############################ Part I : Recognize Clusters and Classify ################################## \n ')
 
@@ -232,7 +210,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
                         print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
                         try:
-                          plot_map(Nc, clump, seed, elems, self.label) #, lbl=['1','2'], lim=[0,10])
+                          plot_map(Nc, clump, seed, elems, self.label)
                         except IndexError:
                           pass
  
@@ -409,13 +387,13 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
      ################### Plot #######################
      
-     def Plot(self, lim=[0.2,1.8], norm=[1, 1e0], axis=[0.36,0.47,0.62,0.75,0.89]):
+     def Plot(self):
          from plot_module import plot_clump
          
          for n in xrange(len(self.cluster_members)):
              elems_group = array(map(lambda j: self.elems[j], self.cluster_members[n]))
              
-             plot_clump(n+1, self.cluster_stats[n], elems_group, self.label, lim, norm, axis)
+             plot_clump(n+1, self.cluster_stats[n], elems_group, self.label)
          
      def Dendrogram(self):
          from plot_module import dendrogram
@@ -441,5 +419,5 @@ if __name__ == '__main__':
    end    = gmode.TimeIt()
    classf = gmode.Classification()
    log    = gmode.WriteLog()
-   plot   = gmode.Plot() #lim=[0,10], norm=None, axis=[1,2])
+   plot   = gmode.Plot()
    dendro = gmode.Dendrogram()

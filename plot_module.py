@@ -15,11 +15,20 @@ from numpy import insert as ainsert
 from itertools import tee, izip, repeat, chain
 import matplotlib.pyplot as plt
 from collections import deque
+from support import config
 
 pathjoin = path.join
 
+option = config('config.cfg', 'PlotConfig')
+
+lim   = map(float, option["lim"])
+norm  = [int(option["norm"][0]), float(option["norm"][1])]
+axis  = map(float, option["axis"])
+label = option["label"]
+print(label)
+
 #
-# Plot Graphics of groups
+# Plot clusters
 #
 
 def plot_distribution(data,*zones):
@@ -42,7 +51,7 @@ def plot_distribution(data,*zones):
         
     plt.show()
 
-def plot_map(Nc, clump, seed, data, link, lbl=['R_u','R_r','R_i','R_z'], lim=[0.5, 1.8]):
+def plot_map(Nc, clump, seed, data, link):
     
     plt.figure(figsize=(6,10),dpi=60)
     
@@ -61,9 +70,9 @@ def plot_map(Nc, clump, seed, data, link, lbl=['R_u','R_r','R_i','R_z'], lim=[0.
         if seed.size != 0: plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go')
         plt.xlim(lim[0], lim[1])
         plt.ylim(lim[0], lim[1])
-        if lbl != None: 
-           plt.ylabel(lbl[n]) 
-           plt.xlabel(lbl[n-1])
+        if label != None:
+           plt.ylabel(label[n])
+           plt.xlabel(label[n-1])
 
     cb=plt.colorbar(orientation='horizontal',fraction=0.10,pad=0.3,drawedges=False)
     cb.set_label('log10(N)')
@@ -71,7 +80,7 @@ def plot_map(Nc, clump, seed, data, link, lbl=['R_u','R_r','R_i','R_z'], lim=[0.
     plt.savefig(pathjoin("TESTS",link,"maps",str(Nc)+'.png'),format='png')
     plt.clf()
 
-def plot_clump(n, stats, data, label, lim, norm, axis):
+def plot_clump(n, stats, data, link):
 
     def pairwise(iterable):
         "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -112,7 +121,7 @@ def plot_clump(n, stats, data, label, lim, norm, axis):
        plt.show()
     else:
        try:
-          plt.savefig(pathjoin("TESTS",label,"plots",str(len(data))+'_clump'+str(n)+'_'+label+'.png'),format='png')
+          plt.savefig(pathjoin("TESTS",link,"plots",str(len(data))+'_clump'+str(n)+'_'+link+'.png'),format='png')
           #plt.savefig(pathjoin("TESTS",label,'Graph'+str(n)+'.png'),format='png')
        except OverflowError:
           pass
@@ -137,7 +146,7 @@ def dendrogram(D,label):
     Z1 = sch.dendrogram(Y, orientation='right',labels=lbl)
     ax1.set_xticks([])
 
-    plt.show()
-    #plt.savefig(pathjoin("TESTS",label,"plots",'dendrogram_'+label+'.png'),format='png')
+    #plt.show()
+    plt.savefig(pathjoin("TESTS",label,"plots",'dendrogram_'+label+'.png'),format='png')
 
 # END
