@@ -22,7 +22,12 @@ pathjoin = path.join
 option = config('config.cfg', 'PlotConfig')
 
 lim   = map(float, option["lim"])
-norm  = [int(option["norm"][0]), float(option["norm"][1])]
+
+try:
+   norm  = [int(option["norm"][0]), float(option["norm"][1])]
+except ValueError:
+   norm = None
+
 axis  = map(float, option["axis"])
 label = option["label"]
 print(label)
@@ -88,7 +93,7 @@ def plot_clump(n, stats, data, link):
         next(b, None)
         return izip(a, b)
 
-    ''' Plot the class unit with members and median values'''
+    ''' Plot the cluster with members and median values'''
 
     x, y = deque(), deque()
     

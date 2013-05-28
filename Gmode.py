@@ -130,7 +130,6 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
          from kernel import classifying
          from plot_module import plot_map
-         from math import log
 
          if len(arg) == 0:
 
@@ -320,6 +319,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
      def Extension(self,**arg):
          from itertools import  imap
+         from plot_module import plot_map
 
          if len(arg) == 0:
             q1   = self.q1
