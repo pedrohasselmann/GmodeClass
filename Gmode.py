@@ -62,6 +62,10 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          else:
             print("imported")
 
+            self.grid     = 2
+            self.ulim     = 1e0
+            self.mlim     = 1e0
+            
          make_dir(pathjoin("TESTS",""))
 
      def Load(self,**arg):
@@ -136,16 +140,16 @@ The input file must be formatted as --> Designation / unique ID / variables / er
             if __name__ != '__main__': self.Load()
             q1        =  self.q1
             grid      =  self.grid
-            ulim      =  self.ulim or 1e0
-            minlim    =  self.mlim or 1e0
+            ulim      =  self.ulim
+            minlim    =  self.mlim
             name      =  self.name
 
          else:
 
             q1      = arg['q1']
             grid    = arg['grid']
-            ulim    = arg['ulim']   or 1e0
-            minlim  = arg['minlim'] or 1e0
+            ulim    = arg['ulim']
+            minlim  = arg['minlim']
             name    = arg['name']
             self.Load(**arg)
 
