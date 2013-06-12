@@ -81,7 +81,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
             q1    = arg['q1']
             ulim  = arg['ulim']   or 1e0
-            mlim  = arg['minlim'] or 1e0
+            mlim  = arg['mlim'] or 1e0
             name  = arg['name']
 
          if ulim != 1e0 and mlim == 1e0:
@@ -141,7 +141,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
             q1        =  self.q1
             grid      =  self.grid
             ulim      =  self.ulim
-            minlim    =  self.mlim
+            mlim    =  self.mlim
             name      =  self.name
 
          else:
@@ -149,7 +149,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
             q1      = arg['q1']
             grid    = arg['grid']
             ulim    = arg['ulim']
-            minlim  = arg['minlim']
+            mlim    = arg['mlim']
             name    = arg['name']
             self.Load(**arg)
 
@@ -175,7 +175,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          ctt, devt, St, Rt = stats(elems)
          Se = cov(self.errs/devt, zeros(M), 1e0)
          
-         minlim = minlim * Se
+         mlim = mlim * Se
 
          print(Se)
 
@@ -185,7 +185,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
          report.append(" S.D.: "+str(devt))
          report.append("Upper Limit: "+str(ulim))
-         report.append(" Minimum Deviation: "+str(minlim))
+         report.append(" Minimum Deviation: "+str(mlim))
          report.append(" Confidence level q1: "+str(scp_sts.norm.cdf(q1) - scp_sts.norm.cdf(-q1)))
          report.append('grid: '+str(grid)+" --> "+str(grid**(M)))
          
@@ -204,7 +204,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
                report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
 
-               clump, seed, report = classifying(q1, ulim, minlim, grid, design, array(elems), devt, report)
+               clump, seed, report = classifying(q1, ulim, mlim, grid, design, array(elems), devt, report)
 
                Na = len(clump)
 
@@ -270,13 +270,13 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          print(" Excluded Sample Size: ",len(excluded))
          
          # Setting in self
-         self.t0 = t0
-         self.t1  = time()
-         self.report = report
-         self.gmode_clusters = gmode_clusters
+         self.t0              = t0
+         self.t1              = time()
+         self.report          = report
+         self.gmode_clusters  = gmode_clusters
          self.cluster_members = cluster_members
-         self.cluster_stats = cluster_stats
-         self.excluded  = excluded
+         self.cluster_stats   = cluster_stats
+         self.excluded        = excluded
          
 
      ################### Evaluate Variables and discriminate it #####################
@@ -393,16 +393,27 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      
      def Plot(self):
          from plot_module import plot_clump
+         from matplotlib.pyplot import close
          
          for n in xrange(len(self.cluster_members)):
              elems_group = array(map(lambda j: self.elems[j], self.cluster_members[n]))
              
              plot_clump(n+1, self.cluster_stats[n], elems_group, self.label)
          
+         close("all")
+         
      def Dendrogram(self):
          from plot_module import dendrogram
           
-         dendrogram(self.D2,self.label)
+         dendrogram(self.D2, self.label)
+     
+     def Histogram(self):
+         from plot_module import histogram
+         
+         cluster_sizes = dict()
+         for n, cluster in enumerate(self.cluster_members): cluster_sizes["T"+str(n+1)] = len(cluster)
+         
+         histogram(cluster_sizes, self.label)
 
      def TimeIt(self):
          # Total processing time:
@@ -425,3 +436,4 @@ if __name__ == '__main__':
    log    = gmode.WriteLog()
    plot   = gmode.Plot()
    dendro = gmode.Dendrogram()
+   hist   = gmode.Histogram()

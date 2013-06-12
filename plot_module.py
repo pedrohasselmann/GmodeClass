@@ -30,7 +30,6 @@ except ValueError:
 
 axis  = map(float, option["axis"])
 label = option["label"]
-print(label)
 
 #
 # Plot clusters
@@ -134,11 +133,34 @@ def plot_clump(n, stats, data, link):
     plt.clf()
 
 #
+# Cluster Size Distribution
+#
+
+def histogram(cluster_sizes, link):
+  
+    ''' Plot histogram of cluster sizes '''
+    from collections import OrderedDict as ordict
+    
+    cl = ordict(sorted(cluster_sizes.iteritems(), key=lambda x: x[1]))
+    X  = ordict(zip( range(len(cluster_sizes)), cl.itervalues() ))
+
+    fig = plt.figure(figsize=(15,8),dpi=80)
+    ax  = fig.add_subplot(1,1,1)
+    ax.set_axisbelow(True)
+    ax.set_yscale('log')
+
+    plt.bar(X.keys(), cl.values(), align='center', width=0.4, color='black')
+    plt.xticks(X.keys(), cl.keys())
+
+    plt.savefig(pathjoin("TESTS",link,"plots",'hist_'+link+'.png'),format='png')
+    plt.close("all")    
+        
+#
 # Dendograms
 #
 
 def dendrogram(D,label):
-    ''' Plot dendrogram between classes'''
+    ''' Plot dendrogram of cluster distances'''
   
     import scipy.cluster.hierarchy as sch
 
@@ -153,5 +175,6 @@ def dendrogram(D,label):
 
     #plt.show()
     plt.savefig(pathjoin("TESTS",label,"plots",'dendrogram_'+label+'.png'),format='png')
+    plt.close("all")
 
 # END
