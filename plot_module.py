@@ -28,8 +28,10 @@ try:
 except ValueError:
    norm = None
 
-axis  = map(float, option["axis"])
-label = option["label"]
+axis   = map(float, option["axis"])
+label  = option["label"]
+xtitle = option["xtitle"]
+ytitle = option["ytitle"]
 
 #
 # Plot clusters
@@ -99,7 +101,8 @@ def plot_clump(n, stats, data, link):
     plt.figure(figsize=(10,9),dpi=30)
     #plt.xlim(-1,data.shape[1])
     plt.ylim(lim[0],lim[1])
-    plt.xlabel("variables")
+    plt.xlabel(xtitle)
+    plt.ylabel(ytitle)
     plt.title('Clump '+str(n)+' Na='+str(data.shape[0]))
 
     for item in data:
