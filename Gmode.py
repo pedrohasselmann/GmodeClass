@@ -29,20 +29,38 @@ pathjoin = path.join
 ####################### Gmode Python Class #############################
 ########################################################################
 
-class Gmode:
+class Gmode:   
+     '''
+     G-mode Multivariate Clustering Method
+     -------------------------------------
+     
+     Developer : Pedro Henrique A Hasselman
+     Method Developer : A. I. Gavrishin and A. Coradini
+     
+     WARNING: Minimum dependencies: Numpy 1.5, Scipy 0.9, matplotlib 1.0.1
+     Input Format
+     -----------
+     The input file must be formatted as --> Designation / unique ID / variables / errors 
+
+     Function
+     --------
+     Class Gmode
+     Gmode.load_data()
+     Gmode.run()
+     Gmode.evaluate()
+     Gmode.extension()
+     Gmode.classification_per_id()
+     Gmode.timeit()
+     Gmode.classification()
+     Gmode.writelog()
+     Gmode.plot()
+     Gmode.dendrogram()
+     Gmode.histogram()
+     '''
 
      __version__ = 1.0
 
      def __init__(self):
-
-         print( \
-' ######################################################################################\n \
-#######   G-mode Multivariate Clustering method - version 1.0 for Python 2.7   #######\n \
-#######         Program Developer: Pedro Henrique A Hasselmann                 #######\n \
-#######       Method Developer: A. I. Gavrishin and A. Coradini                #######\n \
-######################################################################################\n \
-WARNING: Minimal python packages dependencies: Numpy 1.5, Scipy 0.9, matplotlib 1.0.1\n \
-The input file must be formatted as --> Designation / unique ID / variables / errors \n ')
 
          if __name__ == '__main__':
             from support import main
@@ -57,7 +75,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
             self.mlim     = par.mlim
             self.name     = par.name
 
-            self.Load()
+            self.load()
 
          else:
             print("imported")
@@ -68,7 +86,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
             
          make_dir(pathjoin("TESTS",""))
 
-     def Load(self,**arg):
+     def load(self,**arg):
 
          if len(arg) == 0:
          
@@ -106,14 +124,14 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
      ############################ Load Data ####################################
 
-     def LoadData(self,**arg):
+     def load_data(self,**arg):
 
          if len(arg) == 0:
             filename  = self.filename
          else:
-            filename  = arg["file"]
+            filename  = arg["fname"]
 
-         from operator import getitem, itemgetter
+         from operator import itemgetter
 
          data = map(list,genfromtxt(filename, dtype=None))
 
@@ -130,7 +148,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
      ########################### START PROCEDURE #################################
 
-     def Run(self,**arg):
+     def run(self,**arg):
 
          from kernel import classifying
          from plot_module import plot_map
@@ -151,7 +169,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
             ulim    = arg['ulim']
             mlim    = arg['mlim']
             name    = arg['name']
-            self.Load(**arg)
+            self.load(**arg)
 
          #################################################   
          
@@ -168,7 +186,6 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          M=len(elems[0]) # Variable size
          
          print('grid: ',grid,"--> ", grid**(M))
-         print('upper limit :', ulim, ulim**2)
 
          ##################################################
          
@@ -177,7 +194,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          
          mlim = mlim * Se
 
-         print(Se)
+         #print(Se)
 
          ################# Write Into Log #################
          
@@ -192,7 +209,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          cluster_members   = deque()
          cluster_stats     = deque()
 
-         plot_map(0, [], [], elems, self.label)
+         #plot_map(0, [], [], elems, self.label)
          
          report.append('############################ Part I : Recognize Clusters and Classify ################################## \n ')
 
@@ -212,10 +229,10 @@ The input file must be formatted as --> Designation / unique ID / variables / er
                         print("Barycenter size: ",len(seed))
                         print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
-                        try:
+                        '''try:
                           plot_map(Nc, clump, seed, elems, self.label)
                         except IndexError:
-                          pass
+                          pass'''
  
                         # Save cluster member indexes
                         cluster_members.append(map(lambda i: indexs[i], clump))
@@ -281,7 +298,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
      ################### Evaluate Variables and discriminate it #####################
 
-     def Evaluate(self,**arg):
+     def evaluate(self,**arg):
 
          if len(arg) == 0:
             q2    = self.q2
@@ -321,7 +338,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 
      ################################ Fulchignoni et al. (2000) Extension ############################
 
-     def Extension(self,**arg):
+     def extension(self,**arg):
          from itertools import  imap
          from plot_module import plot_map
 
@@ -360,7 +377,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      ################# OUTPUT #####################
 
      # Write classifications into a file:
-     def Classification(self):
+     def classification(self):
          cluster_members = self.cluster_members
          writing         = self.clasf.write
          design          = self.design
@@ -369,7 +386,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          [[writing(str('{0:7} {1:>10} {2:7} T'+str(n+1)+'\n').format(ind,design[ind],uniq_id[ind])) for ind in cluster_members[n]] for n in range(len(cluster_members))]
          self.clasf.close()   
 
-     def ClassificationPerID(self):
+     def classification_per_id(self):
          from gmode_module import CollapseClassification
 
          text = deque()
@@ -384,14 +401,14 @@ The input file must be formatted as --> Designation / unique ID / variables / er
      ################### Log #######################
 
      # Write into a file:
-     def WriteLog(self):
+     def writelog(self):
          
          WriteIt(self.log,      self.report)
          WriteIt(self.briefing, self.gmode_clusters)
 
      ################### Plot #######################
      
-     def Plot(self):
+     def plot(self):
          from plot_module import plot_clump
          from matplotlib.pyplot import close
          
@@ -402,12 +419,12 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          
          close("all")
          
-     def Dendrogram(self):
+     def dendrogram(self):
          from plot_module import dendrogram
           
          dendrogram(self.D2, self.label)
      
-     def Histogram(self):
+     def histogram(self):
          from plot_module import histogram
          
          cluster_sizes = dict()
@@ -415,7 +432,7 @@ The input file must be formatted as --> Designation / unique ID / variables / er
          
          histogram(cluster_sizes, self.label)
 
-     def TimeIt(self):
+     def timeit(self):
          # Total processing time:
          t = (time() - self.t0)/60e0
          self.report.append('total processing time: '+str(t)+' min')
@@ -426,14 +443,16 @@ The input file must be formatted as --> Designation / unique ID / variables / er
 if __name__ == '__main__':
   
    gmode  = Gmode()
-   load   = gmode.LoadData()
-   run    = gmode.Run()
-   ev     = gmode.Evaluate()
-   #ex     = gmode.Extension()
-   col    = gmode.ClassificationPerID()
-   end    = gmode.TimeIt()
-   classf = gmode.Classification()
-   log    = gmode.WriteLog()
-   plot   = gmode.Plot()
-   dendro = gmode.Dendrogram()
-   hist   = gmode.Histogram()
+   gmode.load_data()
+   gmode.run()
+   gmode.evaluate()
+   #gmode.extension()
+   gmode.classification_per_id()
+   gmode.timeit()
+   gmode.classification()
+   gmode.writelog()
+   gmode.plot()
+   gmode.dendrogram()
+   #gmode.histogram()
+   gmode.timeit()
+   gmode.writelog()

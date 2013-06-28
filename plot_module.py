@@ -74,8 +74,10 @@ def plot_map(Nc, clump, seed, data, link):
 
         plt.hexbin(data[:,n-1],data[:,n],gridsize=200,bins='log',mincnt=1)
         if seed.size != 0: plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go')
+            
         plt.xlim(lim[0], lim[1])
         plt.ylim(lim[0], lim[1])
+        
         if label != None:
            plt.ylabel(label[n])
            plt.xlabel(label[n-1])
