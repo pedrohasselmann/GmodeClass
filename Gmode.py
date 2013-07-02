@@ -38,6 +38,14 @@ class Gmode:
      Method Developer : A. I. Gavrishin and A. Coradini
      
      WARNING: Minimum dependencies: Numpy 1.5, Scipy 0.9, matplotlib 1.0.1
+     
+     Parameters
+     ----------
+     q1 : Float. Input critical value.
+     ulim : Float between 0.0 and 1.0. Upper Deviation Limit.
+     mlim : Float between 0.0 and 1.0. Minimum Deviation Limit.
+     grid : Integer. Number of folds in barycenter_density search.
+     
      Input Format
      -----------
      The input file must be formatted as --> Designation / unique ID / variables / errors 
