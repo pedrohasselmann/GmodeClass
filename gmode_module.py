@@ -126,7 +126,7 @@ def hyp_test(N, q1, f, index, x, ct, iS):
        #print(G(N, f, x, ct, iS))
        return index
 
-def CollapseClassification(clusters, ID):
+def collapse_classification(clusters, ID):
 
     ''' Returns a dictionary of classification per ID '''
 
