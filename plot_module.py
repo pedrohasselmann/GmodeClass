@@ -10,9 +10,9 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 
 from os import path
 #import scipy.stats as stats
-from numpy import array, linspace, amin, amax
+from numpy import array, amin, amax
 from numpy import insert as ainsert
-from itertools import tee, izip, repeat, chain
+from itertools import tee, izip
 import matplotlib.pyplot as plt
 from collections import deque
 from support import config
@@ -151,11 +151,12 @@ def histogram(cluster_sizes, link):
 
     fig = plt.figure(figsize=(15,8),dpi=80)
     ax  = fig.add_subplot(1,1,1)
-    ax.set_axisbelow(True)
-    ax.set_yscale('log')
 
     plt.bar(X.keys(), cl.values(), align='center', width=0.4, color='black')
     plt.xticks(X.keys(), cl.keys())
+
+    ax.set_axisbelow(True)
+    ax.set_yscale('log')
 
     plt.savefig(pathjoin("TESTS",link,"plots",'hist_'+link+'.png'),format='png')
     plt.close("all")    

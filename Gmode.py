@@ -291,8 +291,8 @@ class Gmode:
          excluded.extend(indexs)
 
          report.append("######################### Excluded ###############################")
-         report.append(" Excluded Sample Size: "+str(len(excluded)))
-         print(" Excluded Sample Size: ",len(excluded))
+         report.append("Excluded Sample Size: "+str(len(excluded)))
+         print("Excluded Sample Size: ",len(excluded))
          
          # Setting in self
          self.t0              = t0
@@ -395,11 +395,11 @@ class Gmode:
          self.clasf.close()   
 
      def classification_per_id(self):
-         from gmode_module import CollapseClassification
+         from gmode_module import collapse_classification
 
          text = deque()
          
-         catalogue = CollapseClassification(self.cluster_members,self.design)
+         catalogue = collapse_classification(self.cluster_members,self.design)
 
          form = "{0:>10} {1}".format
          [text.append(form(each,l_to_s(catalogue[each]))) for each in catalogue.keys()]
@@ -461,6 +461,6 @@ if __name__ == '__main__':
    gmode.writelog()
    gmode.plot()
    gmode.dendrogram()
-   #gmode.histogram()
+   gmode.histogram()
    gmode.timeit()
    gmode.writelog()
