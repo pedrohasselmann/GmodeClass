@@ -9,11 +9,11 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 ##### IMPORT ######
 
 import warnings
-from numpy import sqrt, array, eye, matrix, dot, diagonal, diagflat, median, fabs, corrcoef, isnan, ravel
+from numpy import sqrt, array, eye, matrix, identity, dot, diagonal, diagflat, median, fabs, corrcoef, isnan, ravel
 from numpy import all as aall
 from numpy import sum as asum
 from numpy.linalg.linalg import LinAlgError
-#from numpy.linalg import det 
+from numpy.linalg import solve
 from itertools import product, chain
 from collections import deque
 

@@ -238,18 +238,18 @@ class Gmode:
                         #print("Barycenter size: ",len(seed))
                         #print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
-                        if realtime_map == 'y':
-                           try:
-                              plot_map(Nc, clump, seed, elems, self.label)
-                           except IndexError:
-                              pass
- 
                         # Save cluster member indexes
                         cluster_members.append(map(lambda i: indexs[i], clump))
 
                         # save cluster statistics
                         cluster_stats.append(shortcut(clump, elems))
 
+                        if realtime_map == 'y':
+                           try:
+                              plot_map(Nc, clump, seed, elems, self.label)
+                           except IndexError:
+                              pass
+                        
                         # Exclude group members from the sample:
                         for i in clump:  elems[i], design[i], indexs[i] = None, None, None
                         elems  = filter(lambda x: x!=None, elems)
