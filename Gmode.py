@@ -13,7 +13,7 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 from os import path
 from time import time
 from support import make_dir
-from scipy import stats as scp_sts
+from scipy.stats import norm as normal
 from collections import deque
 from numpy import array, sum, sqrt, zeros, genfromtxt, float64, all
 from gmode_module import stats, shortcut, Invert, hyp_test, free, cov
@@ -72,7 +72,7 @@ class Gmode:
 
          if __name__ == '__main__':
             from support import main
-            print("main")
+            #print("main")
             par = main()
 
             self.filename = par.filename
@@ -86,7 +86,7 @@ class Gmode:
             self.load()
 
          else:
-            print("imported")
+            #print("imported")
 
             self.grid     = 2
             self.ulim     = 1e0
@@ -212,7 +212,7 @@ class Gmode:
          report.append(" S.D.: "+str(devt))
          report.append("Upper Limit: "+str(ulim))
          report.append(" Minimum Deviation: "+str(mlim))
-         report.append(" Confidence level q1: "+str(scp_sts.norm.cdf(q1) - scp_sts.norm.cdf(-q1)))
+         report.append(" Confidence level q1: "+str(normal.cdf(q1) - normal.cdf(-q1)))
          report.append('grid: '+str(grid)+" --> "+str(grid**(M)))
          
          cluster_members   = deque()
@@ -263,7 +263,7 @@ class Gmode:
                         
                         report.append("Cov. Matrix: \n"+str(cluster_stats[-1][2])+"\n")
 
-                        gmode_clusters.append("T"+str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
+                        gmode_clusters.append(str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
      
                else:
                         Nc -= 1
@@ -327,7 +327,7 @@ class Gmode:
 
             report.append('\n############################## Part II : Verifying the variable significance ###############################\n')
 
-            report.append("Confidence level q2: "+str(scp_sts.norm.cdf(q2) - scp_sts.norm.cdf(-q2)))
+            report.append("Confidence level q2: "+str(normal.cdf(q2) - normal.cdf(-q2)))
 
             d2, Gc, D2 = verifying(q2, cluster_members, array(elems)/(stats(elems)[1])) 
 
@@ -394,7 +394,7 @@ class Gmode:
          design          = self.design
          uniq_id         = self.uniq_id
          
-         [[writing(str('{0:7} {1:>10} {2:7} T'+str(n+1)+'\n').format(ind,design[ind],uniq_id[ind])) for ind in cluster_members[n]] for n in range(len(cluster_members))]
+         [[writing(str('{0:7} {1:>10} {2:7} '+str(n+1)+'\n').format(ind,design[ind],uniq_id[ind])) for ind in cluster_members[n]] for n in range(len(cluster_members))]
          self.clasf.close()   
 
      def classification_per_id(self):
@@ -439,8 +439,8 @@ class Gmode:
          from plot_module import histogram
          
          cluster_sizes, cluster_stats = dict(), dict()
-         for n, cluster in enumerate(self.cluster_members): cluster_sizes["T"+str(n+1)] = len(cluster)
-         for n, cluster in enumerate(self.cluster_stats): cluster_stats["T"+str(n+1)] = sqrt(sum(cluster[1]**2))
+         for n, cluster in enumerate(self.cluster_members): cluster_sizes[n+1] = len(cluster)
+         for n, cluster in enumerate(self.cluster_stats): cluster_stats[n+1] = sqrt(sum(cluster[1]**2))
          
          histogram(cluster_stats, cluster_sizes, self.label)
 
@@ -460,11 +460,9 @@ if __name__ == '__main__':
    gmode.evaluate()
    #gmode.extension()
    gmode.classification_per_id()
-   gmode.timeit()
    gmode.classification()
-   gmode.writelog()
    gmode.plot()
+   gmode.timeit()
+   gmode.writelog()
    gmode.dendrogram()
    gmode.histogram()
-   gmode.timeit()
-   gmode.writelog()

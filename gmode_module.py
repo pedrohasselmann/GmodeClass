@@ -134,7 +134,7 @@ def collapse_classification(clusters, ID):
     tax = 0
     for group in clusters:
         tax += 1
-        t = 'T'+str(tax)
+        t = str(tax)
         for item in set(group):
             try:
                if cat.has_key(ID[item]):

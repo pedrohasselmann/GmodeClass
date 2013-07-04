@@ -102,8 +102,8 @@ def plot_clump(n, stats, data, link):
     plt.figure(figsize=(10,9),dpi=30)
     #plt.xlim(-1,data.shape[1])
     plt.ylim(lim[0],lim[1])
-    plt.xlabel(xtitle)
-    plt.ylabel(ytitle)
+    plt.xlabel(*xtitle)
+    plt.ylabel(*ytitle)
     plt.title('Clump '+str(n)+' Na='+str(data.shape[0]))
 
     for item in data:
@@ -148,10 +148,8 @@ def histogram(Y, cluster_sizes, link):
     import mpl_toolkits.axisartist as AA
     
     cl = ordict(sorted(cluster_sizes.iteritems(), key=lambda x: x[1]))
-    Y  = ordict(sorted(Y.iteritems(), key=lambda x: cl[x[0]]))
-    X  = ordict(zip( range(len(cluster_sizes)), cl.itervalues() ))
-    #print(cl)
-    #print(Y)
+    #Y  = ordict(sorted(Y.iteritems(), key=lambda x: cl[x[0]]))
+    #X  = ordict(zip( range(len(cluster_sizes)), cl.itervalues() ))
 
     fig = plt.figure(figsize=(15,8),dpi=80)
     #ax  = fig.add_subplot(1,1,1)
@@ -160,21 +158,19 @@ def histogram(Y, cluster_sizes, link):
     plt.subplots_adjust(right=0.75)
     test = host.twinx()
 
-    host.set_xticks(X.keys(), cl.keys())
-
-    size = host.bar(X.keys(), cl.values(), align='center', width=0.4, color='black', label="Cluster Size")
-    var  = test.plot(X.keys(), Y.values(), color="red", marker='o', linestyle='-', linewidth=2, label="Cluster $\sigma$")
+    size = host.bar(cl.keys(), cl.values(), align='center', width=0.4, color='black', label="Cluster Size")
+    var  = test.plot(Y.keys(), Y.values(), color="red", marker='o', linestyle='-', linewidth=2, label="Cluster $\sigma$")
 
     host.set_xlabel("Identified Cluster")
     host.set_ylabel("Cluster Size")
     test.set_ylabel("Integrated Cluster $\sigma$")
-    
-    host.set_axisbelow(True)
-    host.set_yscale('log')
-
     test.set_ylim(0.0, 1.0)
+    host.set_yscale('log') 
+    
+    #host.set_axisbelow(True)
+    #host.set_xticks(X.keys(), cl.keys())
 
-    host.legend()
+    host.legend(title=link)
 
     plt.savefig(pathjoin("TESTS",link,"plots",'hist_'+link+'.png'),format='png')
     plt.show()
@@ -184,12 +180,12 @@ def histogram(Y, cluster_sizes, link):
 # Dendograms
 #
 
-def dendrogram(D,label):
+def dendrogram(D, link):
     ''' Plot dendrogram of cluster distances'''
   
     import scipy.cluster.hierarchy as sch
 
-    lbl = ['T'+str(n+1) for n in xrange(D.shape[0])]
+    lbl = [str(n+1) for n in xrange(D.shape[0])]
 
     # Compute and plot dendrogram.
     fig = plt.figure(figsize=(8,14),dpi=80)
@@ -197,9 +193,12 @@ def dendrogram(D,label):
     Y = sch.median(D)
     Z1 = sch.dendrogram(Y, orientation='right',labels=lbl)
     ax1.set_xticks([])
+    ax1.set_ylabel("Identified Cluster")
+    ax1.set_xlabel("Cluster Parity")
+    plt.title(link)
 
     #plt.show()
-    plt.savefig(pathjoin("TESTS",label,"plots",'dendrogram_'+label+'.png'),format='png')
+    plt.savefig(pathjoin("TESTS",link,"plots",'dendrogram_'+link+'.png'),format='png')
     plt.show()
     plt.close("all")
 
