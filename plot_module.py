@@ -89,14 +89,13 @@ def plot_map(Nc, clump, seed, data, link):
     plt.clf()
 
 def plot_clump(n, stats, data, link):
+    ''' Plot the cluster with members and median values'''
 
     def pairwise(iterable):
         "s -> (s0,s1), (s1,s2), (s2, s3), ..."
         a, b = tee(iterable)
         next(b, None)
         return izip(a, b)
-
-    ''' Plot the cluster with members and median values'''
 
     x, y = deque(), deque()
     
@@ -141,24 +140,44 @@ def plot_clump(n, stats, data, link):
 # Cluster Size Distribution
 #
 
-def histogram(cluster_sizes, link):
-  
+def histogram(Y, cluster_sizes, link):  
     ''' Plot histogram of cluster sizes '''
+    
     from collections import OrderedDict as ordict
+    from mpl_toolkits.axes_grid1 import host_subplot
+    import mpl_toolkits.axisartist as AA
     
     cl = ordict(sorted(cluster_sizes.iteritems(), key=lambda x: x[1]))
+    Y  = ordict(sorted(Y.iteritems(), key=lambda x: cl[x[0]]))
     X  = ordict(zip( range(len(cluster_sizes)), cl.itervalues() ))
+    #print(cl)
+    #print(Y)
 
     fig = plt.figure(figsize=(15,8),dpi=80)
-    ax  = fig.add_subplot(1,1,1)
+    #ax  = fig.add_subplot(1,1,1)
 
-    plt.bar(X.keys(), cl.values(), align='center', width=0.4, color='black')
-    plt.xticks(X.keys(), cl.keys())
+    host = host_subplot(111, axes_class=AA.Axes)
+    plt.subplots_adjust(right=0.75)
+    test = host.twinx()
 
-    ax.set_axisbelow(True)
-    ax.set_yscale('log')
+    host.set_xticks(X.keys(), cl.keys())
+
+    size = host.bar(X.keys(), cl.values(), align='center', width=0.4, color='black', label="Cluster Size")
+    var  = test.plot(X.keys(), Y.values(), color="red", marker='o', linestyle='-', linewidth=2, label="Cluster $\sigma$")
+
+    host.set_xlabel("Identified Cluster")
+    host.set_ylabel("Cluster Size")
+    test.set_ylabel("Integrated Cluster $\sigma$")
+    
+    host.set_axisbelow(True)
+    host.set_yscale('log')
+
+    test.set_ylim(0.0, 1.0)
+
+    host.legend()
 
     plt.savefig(pathjoin("TESTS",link,"plots",'hist_'+link+'.png'),format='png')
+    plt.show()
     plt.close("all")    
         
 #
@@ -173,7 +192,7 @@ def dendrogram(D,label):
     lbl = ['T'+str(n+1) for n in xrange(D.shape[0])]
 
     # Compute and plot dendrogram.
-    fig = plt.figure(figsize=(8,14),dpi=100)
+    fig = plt.figure(figsize=(8,14),dpi=80)
     ax1 = fig.add_axes([0.04,0.04,0.9,0.9])
     Y = sch.median(D)
     Z1 = sch.dendrogram(Y, orientation='right',labels=lbl)
@@ -181,6 +200,8 @@ def dendrogram(D,label):
 
     #plt.show()
     plt.savefig(pathjoin("TESTS",label,"plots",'dendrogram_'+label+'.png'),format='png')
+    plt.show()
     plt.close("all")
+
 
 # END

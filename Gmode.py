@@ -15,7 +15,7 @@ from time import time
 from support import make_dir
 from scipy import stats as scp_sts
 from collections import deque
-from numpy import array, zeros, genfromtxt, float64, all
+from numpy import array, sum, sqrt, zeros, genfromtxt, float64, all
 from gmode_module import stats, shortcut, Invert, hyp_test, free, cov
 from file_module import l_to_s, pretty_print, WriteIt
 
@@ -156,14 +156,14 @@ class Gmode:
 
      ########################### START PROCEDURE #################################
 
-     def run(self,**arg):
+     def run(self, realtime_map='y', **arg):
 
          from kernel import classifying
          from plot_module import plot_map
 
          if len(arg) == 0:
 
-            if __name__ != '__main__': self.Load()
+            if __name__ != '__main__': self.load()
             q1        =  self.q1
             grid      =  self.grid
             ulim      =  self.ulim
@@ -177,6 +177,7 @@ class Gmode:
             ulim    = arg['ulim']
             mlim    = arg['mlim']
             name    = arg['name']
+
             self.load(**arg)
 
          #################################################   
@@ -193,7 +194,7 @@ class Gmode:
          N=len(elems)    # Sample size
          M=len(elems[0]) # Variable size
          
-         print('grid: ',grid,"--> ", grid**(M))
+         #print('grid: ',grid,"--> ", grid**(M))
 
          ##################################################
          
@@ -234,13 +235,14 @@ class Gmode:
                Na = len(clump)
 
                if Na > 3 or Na >= len(seed) and Na != 0:
-                        print("Barycenter size: ",len(seed))
-                        print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
+                        #print("Barycenter size: ",len(seed))
+                        #print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
-                        '''try:
-                          plot_map(Nc, clump, seed, elems, self.label)
-                        except IndexError:
-                          pass'''
+                        if realtime_map == 'y':
+                           try:
+                              plot_map(Nc, clump, seed, elems, self.label)
+                           except IndexError:
+                              pass
  
                         # Save cluster member indexes
                         cluster_members.append(map(lambda i: indexs[i], clump))
@@ -259,7 +261,7 @@ class Gmode:
                         report.append("\nC.T.: "+l_to_s(cluster_stats[-1][0])+"\nS.D.: "+l_to_s(cluster_stats[-1][1])+ \
                                         "\nSize: "+str(Na)+"       Left: "+str(N)+"\n")
                         
-                        report.append("Cov. Matrix: \n"+str(cluster_stats[-1][2]))
+                        report.append("Cov. Matrix: \n"+str(cluster_stats[-1][2])+"\n")
 
                         gmode_clusters.append("T"+str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
      
@@ -292,6 +294,7 @@ class Gmode:
 
          report.append("######################### Excluded ###############################")
          report.append("Excluded Sample Size: "+str(len(excluded)))
+         print("Number of Clusters: ", len(cluster_stats))
          print("Excluded Sample Size: ",len(excluded))
          
          # Setting in self
@@ -344,7 +347,7 @@ class Gmode:
             self.Gc = Gc
             self.D2 = D2
 
-     ################################ Fulchignoni et al. (2000) Extension ############################
+     ###### Fulchignoni et al. (2000) Extension ######
 
      def extension(self,**arg):
          from itertools import  imap
@@ -435,10 +438,11 @@ class Gmode:
      def histogram(self):
          from plot_module import histogram
          
-         cluster_sizes = dict()
+         cluster_sizes, cluster_stats = dict(), dict()
          for n, cluster in enumerate(self.cluster_members): cluster_sizes["T"+str(n+1)] = len(cluster)
+         for n, cluster in enumerate(self.cluster_stats): cluster_stats["T"+str(n+1)] = sqrt(sum(cluster[1]**2))
          
-         histogram(cluster_sizes, self.label)
+         histogram(cluster_stats, cluster_sizes, self.label)
 
      def timeit(self):
          # Total processing time:
