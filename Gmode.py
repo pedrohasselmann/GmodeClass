@@ -168,7 +168,6 @@ class Gmode:
             grid      =  self.grid
             ulim      =  self.ulim
             mlim    =  self.mlim
-            name      =  self.name
 
          else:
 
@@ -176,7 +175,6 @@ class Gmode:
             grid    = arg['grid']
             ulim    = arg['ulim']
             mlim    = arg['mlim']
-            name    = arg['name']
 
             self.load(**arg)
 
@@ -246,7 +244,7 @@ class Gmode:
 
                         if realtime_map == 'y':
                            try:
-                              plot_map(Nc, clump, seed, elems, self.label)
+                              plot_map(Nc, clump, seed, elems, q1, cluster_stats[-1][0], cluster_stats[-1][2], self.label)
                            except IndexError:
                               pass
                         
@@ -420,13 +418,13 @@ class Gmode:
      ################### Plot #######################
      
      def plot(self):
-         from plot_module import plot_clump
+         from plot_module import plot_spectral
          from matplotlib.pyplot import close
          
          for n in xrange(len(self.cluster_members)):
              elems_group = array(map(lambda j: self.elems[j], self.cluster_members[n]))
              
-             plot_clump(n+1, self.cluster_stats[n], elems_group, self.label)
+             plot_spectral(n+1, self.cluster_stats[n], elems_group, self.label)
          
          close("all")
          

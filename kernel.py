@@ -67,7 +67,7 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, report):
                     Sg[n,n] = minlim[n,n]
                     devg[n] = sqrt(minlim[n,n])
 
-          #plot_clump(i+1, [ctg*devt, devg*devt, Rg], elems[group], pathjoin(label,"plots","Clump"+str(Nc)), lim=[0.2,1.8], norm=[1,1e0], axis=[0.36,0.47,0.62,0.75,0.89])
+          #plot_clump(i+1, [ctg*devt, devg*devt, Rg], elems[group], pathjoin(label,"plots","Clump"+str(Nc)))
              
 
 # G hypothesis test:

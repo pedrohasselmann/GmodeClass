@@ -10,10 +10,12 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 
 from os import path
 #import scipy.stats as stats
-from numpy import array, amin, amax
+from numpy import array, amin, amax, degrees, sqrt, arctan2, zeros
 from numpy import insert as ainsert
+from numpy.linalg import eigh
 from itertools import tee, izip
 import matplotlib.pyplot as plt
+from matplotlib.patches import Arc
 from collections import deque
 from support import config
 
@@ -57,7 +59,47 @@ def plot_distribution(data,*zones):
         
     plt.show()
 
-def plot_map(Nc, clump, seed, data, link):
+def plot_cluster(cov, ct, q1, ax=None, **kwargs):
+    """
+    Plots an `nstd` sigma error ellipse based on the specified covariance
+    matrix (`cov`). Additional keyword arguments are passed on to the 
+    ellipse patch artist.
+
+    Parameters
+    ----------
+        cov : The 2x2 covariance matrix to base the ellipse on
+        ct  : The location of the center of the ellipse. Expects a 2-element
+            sequence of [x0, y0].
+        nstd : The radius of the ellipse in numbers of standard deviations.
+            Defaults to 2 standard deviations.
+        ax : The axis that the ellipse will be plotted on. Defaults to the 
+            current axis.
+        Additional keyword arguments are pass on to the ellipse patch.
+
+    Returns
+    -------
+        A matplotlib ellipse artist
+    """
+    def eigsorted(cov):
+        vals, vecs = eigh(cov)
+        order = vals.argsort()[::-1]
+        return vals[order], vecs[:,order]
+
+    if ax is None:
+       ax = plt.gca()
+
+    vals, vecs = eigsorted(cov)
+    theta = degrees(arctan2(*vecs[:,0][::-1]))
+
+    # Width and height are "full" widths, not radius
+    width, height = 2 * q1 * sqrt(vals)
+    ellip = Arc(xy=ct, width=width, height=height, angle=theta, linestyle='solid', linewidth=2.5, **kwargs)
+
+    ax.add_artist(ellip)
+    return ellip
+
+def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
+    ''' Density distribution of sample superposed with initial seed and identified cluster.'''    
     
     plt.figure(figsize=(6,10),dpi=60)
     
@@ -73,7 +115,9 @@ def plot_map(Nc, clump, seed, data, link):
         plt.subplot(i)
 
         plt.hexbin(data[:,n-1],data[:,n],gridsize=200,bins='log',mincnt=1)
-        if seed.size != 0: plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go')
+        if seed.size != 0:
+           plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go', markersize=0.1)
+           plot_cluster(cov[n-1:n+1, n-1:n+1], ct[n-1:n+1], q1)
             
         plt.xlim(lim[0], lim[1])
         plt.ylim(lim[0], lim[1])
@@ -88,8 +132,8 @@ def plot_map(Nc, clump, seed, data, link):
     plt.savefig(pathjoin("TESTS",link,"maps",str(Nc)+'.png'),format='png')
     plt.clf()
 
-def plot_clump(n, stats, data, link):
-    ''' Plot the cluster with members and median values'''
+def plot_spectral(n, stats, data, link):
+    ''' The spectral variable plot of central tendency and members of a given cluster.'''
 
     def pairwise(iterable):
         "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -141,7 +185,7 @@ def plot_clump(n, stats, data, link):
 #
 
 def histogram(Y, cluster_sizes, link):  
-    ''' Plot histogram of cluster sizes '''
+    ''' Plot histogram of cluster sizes and integrated standard deviation.'''
     
     from collections import OrderedDict as ordict
     from mpl_toolkits.axes_grid1 import host_subplot
@@ -157,8 +201,10 @@ def histogram(Y, cluster_sizes, link):
     host = host_subplot(111, axes_class=AA.Axes)
     plt.subplots_adjust(right=0.75)
     test = host.twinx()
+    
+    bottom = zeros(len(cl.keys()))
 
-    size = host.bar(cl.keys(), cl.values(), align='center', width=0.4, color='black', label="Cluster Size")
+    size = host.bar(cl.keys(), cl.values(), align='center', width=0.4, color='black', label="Cluster Size", bottom=bottom)
     var  = test.plot(Y.keys(), Y.values(), color="red", marker='o', linestyle='-', linewidth=2, label="Cluster $\sigma$")
 
     host.set_xlabel("Identified Cluster")
@@ -181,7 +227,7 @@ def histogram(Y, cluster_sizes, link):
 #
 
 def dendrogram(D, link):
-    ''' Plot dendrogram of cluster distances'''
+    ''' Plot dendrogram of cluster's parity.'''
   
     import scipy.cluster.hierarchy as sch
 
