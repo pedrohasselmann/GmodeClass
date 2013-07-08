@@ -9,7 +9,7 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 ##### IMPORT ######
 
 import warnings
-from numpy import sqrt, array, eye, matrix, identity, dot, diagonal, diagflat, median, fabs, corrcoef, isnan, ravel
+from numpy import sqrt, array, eye, matrix, identity, dot, diagonal, diagflat, median, mean, fabs, corrcoef, isnan, ravel
 from numpy import all as aall
 from numpy import sum as asum
 from numpy.linalg.linalg import LinAlgError
@@ -25,7 +25,7 @@ TINY = 1e-9
 #
 
 def free(R):
-    return ravel( R.shape[1]/asum(R, axis=0) )
+    return ravel( R.shape[1]**2 /asum(R) )
 
 def pearson_R(X):
     r2 = corrcoef(zip(*X))**2
@@ -36,7 +36,7 @@ def pearson_R(X):
        whereNaN = isnan(r2)
        r2[whereNaN] = 1e0
 
-    return r2
+    return matrix(r2)
 
 def Robust_R(X, ct, dev):
   
@@ -105,7 +105,7 @@ def G(N, f, X, ct, iS):
     
     # Mahalanobis distance estimator:
     X = X - ct
-    z2 = fabs( X * ravel( dot(iS, X ) ) )
+    z2 = asum( fabs( X * ravel( dot(iS, X ) ) ) )
 
     # G transformation:
     if aall(N*f > 100e0):
@@ -126,6 +126,20 @@ def hyp_test(N, q1, f, index, x, ct, iS):
        #print(G(N, f, x, ct, iS))
        return index
 
+       
+def robust_parameter(N, dev):
+    ''' Parameter to measure the robustness of a G-mode test.
+        
+        The parameter is given by the weighted average:
+        
+        P = SUM( N^-1 * var ) / SUM( N^-1 )
+    '''
+    
+    var = asum(dev**2, axis=1)
+    iN  = 1e0/N
+    
+    return asum( iN * var ) / asum(iN) + asum( N * var ) / asum(N)
+    
 def collapse_classification(clusters, ID):
 
     ''' Returns a dictionary of classification per ID '''

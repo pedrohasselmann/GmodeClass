@@ -19,19 +19,20 @@ from numpy import round as arround
 ############ Neighboring Central Method: Recognition of Classes and Classification ###########
  
 def classifying(q1, ulim, minlim, grid, design, data, devt, report):
+    ''' Iterative procedure of sample clustering'''
 
     N = data.shape[0]    # Sample Number
     M = data.shape[1]
 
 #_______________________________Whitenning the sample__________________________
 
-    #elems = data
     data = data/devt
 
 #________________________________Barycenter______________________________________
 
     seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), nmin=int(grid*30/M))
-
+    #seed = barycenter_hist(grid, design, data)
+    
     if len(seed) > 2:
        report.append("Barycenter: "+l_to_s(map(lambda j: design[j], seed)))
        #print("Barycenter: "+l_to_s(map(lambda j: design[j], seed)))
@@ -43,18 +44,18 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, report):
 # ______________________________CLASSIFICATION__________________________________
 
     i = 0
-    Rg, Na_prior, Na_prior02  = eye(M), Na, Na
+    Rc, Na_prior, Na_prior02  = eye(M), Na, Na
     
     #make_dir(pathjoin("TESTS",label,"plots","Clump"+str(Nc),""))
 
     #(round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior) (round(Rg,6) != round(R_prior,6) and Na != Na_prior and Na != Na_prior02)
-    while (i == 0 or (round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior and Na != Na_prior02)) and i < 50 and Na > 2:
+    while (i == 0 or (round(asum(Rc),6) != round(asum(R_prior),6) and Na != Na_prior and Na != Na_prior02)) and i < 50 and Na > 2:
 
-          R_prior = Rg
+          R_prior = Rc
 
-# *g --> group statistics
+# *c --> cluster statistics
 
-          ctg, devg, Sg, Rg = stats(data[group])
+          ctc, devc, Sc, Rc = stats(data[group])
 
           Na_prior02 = Na_prior
           Na_prior   = Na
@@ -62,31 +63,30 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, report):
 # Replace lower deviations than minimal limit:
 
           if i == 0:
-             for n, d in enumerate(devg): 
+             for n, d in enumerate(devc): 
                  if d < sqrt(minlim[n,n]):
-                    Sg[n,n] = minlim[n,n]
-                    devg[n] = sqrt(minlim[n,n])
+                    Sc[n,n] = minlim[n,n]
+                    devc[n] = sqrt(minlim[n,n])
 
           #plot_clump(i+1, [ctg*devt, devg*devt, Rg], elems[group], pathjoin(label,"plots","Clump"+str(Nc)))
              
 
 # G hypothesis test:
 
-          iSg = Invert(Sg)
-          f = free(Rg)
+          iSc = Invert(Sc)
+          f = free(Rc)
           #Rg = f/M
 
           group = filter(lambda x: x != None, \
-                  imap(lambda ind, y: hyp_test(N,q1,f,ind,y,ctg,iSg), range(N), data))
+                  imap(lambda ind, y: hyp_test(N,q1,f,ind,y,ctc,iSc), range(N), data))
 
           Na = len(group)
 
-          report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(devg, 3))+"\nf: "+str(f)+"\n")
-          #report.append("Cov. Matrix : \n"+str(Sg))
+          report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(devc, 3))+"\nf: "+str(f)+"\n")
 
 # Once upper limit is reached the iteration is haulted.
           if i != 0 and ulim < 1e0:
-             if aany(devg >= ulim):
+             if aany(devc >= ulim):
                 return group, seed, report
           
           i += 1

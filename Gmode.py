@@ -16,7 +16,6 @@ from support import make_dir
 from scipy.stats import norm as normal
 from collections import deque
 from numpy import array, sum, sqrt, zeros, genfromtxt, float64, all
-from gmode_module import stats, shortcut, Invert, hyp_test, free, cov
 from file_module import l_to_s, pretty_print, WriteIt
 
 pathjoin = path.join
@@ -160,6 +159,7 @@ class Gmode:
 
          from kernel import classifying
          from plot_module import plot_map
+         from gmode_module import stats, shortcut, cov
 
          if len(arg) == 0:
 
@@ -304,6 +304,12 @@ class Gmode:
          self.cluster_stats   = cluster_stats
          self.excluded        = excluded
          
+         # Robustness
+         
+         self.robustness()
+         print("Robustness: ", self.robust)
+         report.append("Robustness: "+str(self.robust))
+         
 
      ################### Evaluate Variables and discriminate it #####################
 
@@ -317,6 +323,7 @@ class Gmode:
          if len(self.cluster_members) > 1:
 
             from eval_variables import verifying
+            from gmode_module import stats
 
             cluster_members = self.cluster_members
             elems      = self.elems
@@ -350,6 +357,7 @@ class Gmode:
      def extension(self,**arg):
          from itertools import  imap
          from plot_module import plot_map
+         from gmode_module import Invert, free, hyp_test
 
          if len(arg) == 0:
             q1   = self.q1
@@ -382,11 +390,26 @@ class Gmode:
          print("Excluded : ", len(sample) - len(N))
          self.report.append("\n Totally Excluded: "+str(len(sample) - len(N)))
 
-
+     ############### ROBUST TEST ##################
+     
+     def robustness(self):
+         ''' Measuring robustness '''
+       
+         from gmode_module import robust_parameter as rpar
+         
+         # cluster variance array:
+         cl_var = array(map(lambda x: x[1], self.cluster_stats))
+         # cluster size dictionary:
+         cl_size = array([len(cluster) for cluster in self.cluster_members])
+         
+         self.robust = rpar(cl_size, cl_var)
+         
      ################# OUTPUT #####################
 
      # Write classifications into a file:
      def classification(self):
+         ''' Write classifications into a file '''
+         
          cluster_members = self.cluster_members
          writing         = self.clasf.write
          design          = self.design
@@ -397,6 +420,7 @@ class Gmode:
 
      def classification_per_id(self):
          from gmode_module import collapse_classification
+         from file_module import WriteIt
 
          text = deque()
          
@@ -411,6 +435,7 @@ class Gmode:
 
      # Write into a file:
      def writelog(self):
+         from file_module import WriteIt
          
          WriteIt(self.log,      self.report)
          WriteIt(self.briefing, self.gmode_clusters)
@@ -437,7 +462,9 @@ class Gmode:
          from plot_module import histogram
          
          cluster_sizes, cluster_stats = dict(), dict()
+         # cluster size dictionary:
          for n, cluster in enumerate(self.cluster_members): cluster_sizes[n+1] = len(cluster)
+         # cluster variance dictionary:
          for n, cluster in enumerate(self.cluster_stats): cluster_stats[n+1] = sqrt(sum(cluster[1]**2))
          
          histogram(cluster_stats, cluster_sizes, self.label)
@@ -454,7 +481,7 @@ if __name__ == '__main__':
   
    gmode  = Gmode()
    gmode.load_data()
-   gmode.run()
+   gmode.run(realtime_map="y")
    gmode.evaluate()
    #gmode.extension()
    gmode.classification_per_id()

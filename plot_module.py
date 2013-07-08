@@ -93,7 +93,7 @@ def plot_cluster(cov, ct, q1, ax=None, **kwargs):
 
     # Width and height are "full" widths, not radius
     width, height = 2 * q1 * sqrt(vals)
-    ellip = Arc(xy=ct, width=width, height=height, angle=theta, linestyle='solid', linewidth=2.5, **kwargs)
+    ellip = Arc(xy=ct, width=width, height=height, angle=theta, **kwargs)
 
     ax.add_artist(ellip)
     return ellip
@@ -108,7 +108,7 @@ def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
     seed  = array(seed)
     M = data.shape[1]    
 
-    plt.title('Clump '+str(Nc))
+    plt.title('Cluster '+str(Nc))
     
     for n in xrange(1,M):
         i = int((M-1)*100+10+n)
@@ -116,8 +116,9 @@ def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
 
         plt.hexbin(data[:,n-1],data[:,n],gridsize=200,bins='log',mincnt=1)
         if seed.size != 0:
-           plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go', markersize=0.1)
-           plot_cluster(cov[n-1:n+1, n-1:n+1], ct[n-1:n+1], q1)
+           plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go', markersize=2.5)
+           plot_cluster(cov[n-1:n+1, n-1:n+1], ct[n-1:n+1], 1e0, linestyle='solid', linewidth=1)          
+           plot_cluster(cov[n-1:n+1, n-1:n+1], ct[n-1:n+1], q1, linestyle='solid', linewidth=2)
             
         plt.xlim(lim[0], lim[1])
         plt.ylim(lim[0], lim[1])
@@ -210,7 +211,7 @@ def histogram(Y, cluster_sizes, link):
     host.set_xlabel("Identified Cluster")
     host.set_ylabel("Cluster Size")
     test.set_ylabel("Integrated Cluster $\sigma$")
-    test.set_ylim(0.0, 1.0)
+    #test.set_ylim(0.0, 1.0)
     host.set_yscale('log') 
     
     #host.set_axisbelow(True)
