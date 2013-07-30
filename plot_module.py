@@ -34,6 +34,7 @@ axis   = map(float, option["axis"])
 label  = option["label"]
 xtitle = option["xtitle"]
 ytitle = option["ytitle"]
+grid_size = int(*option["grid_size"])
 
 #
 # Plot clusters
@@ -114,7 +115,7 @@ def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
         i = int((M-1)*100+10+n)
         plt.subplot(i)
 
-        plt.hexbin(data[:,n-1],data[:,n],gridsize=200,bins='log',mincnt=1)
+        plt.hexbin(data[:,n-1],data[:,n],gridsize=grid_size,bins='log',mincnt=1)
         if seed.size != 0:
            plt.plot(data[clump,n-1], data[clump,n], 'ro', data[seed,n-1], data[seed,n], 'go', markersize=2.5)
            plot_cluster(cov[n-1:n+1, n-1:n+1], ct[n-1:n+1], 1e0, linestyle='solid', linewidth=1)          
@@ -220,7 +221,7 @@ def histogram(Y, cluster_sizes, link):
     host.legend(title=link)
 
     plt.savefig(pathjoin("TESTS",link,"plots",'hist_'+link+'.png'),format='png')
-    plt.show()
+    #plt.show()
     plt.close("all")    
         
 #
@@ -246,7 +247,7 @@ def dendrogram(D, link):
 
     #plt.show()
     plt.savefig(pathjoin("TESTS",link,"plots",'dendrogram_'+link+'.png'),format='png')
-    plt.show()
+    #plt.show()
     plt.close("all")
 
 

@@ -54,7 +54,7 @@ def WriteIt(pointer,text):
 def DumpQuery(query,filename):
 
    '''
-      Dump file of a dictionary query produced by ephemutil package.
+      Pickle a dictionary.
    '''
    try:
        mkdir(path.join("Backup",""))
@@ -72,7 +72,7 @@ def DumpQuery(query,filename):
 def DumpRecover(filename):
 
    '''
-      Recover a dump file produced by ephemutil package.
+      Recover a Pickle of a dictionary.
    '''
    
    import cPickle as pickle

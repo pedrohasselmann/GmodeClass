@@ -18,19 +18,17 @@ from numpy import round as arround
   
 ############ Neighboring Central Method: Recognition of Classes and Classification ###########
  
-def classifying(q1, ulim, minlim, grid, design, data, devt, report):
+def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
     ''' Iterative procedure of sample clustering'''
 
     N = data.shape[0]    # Sample Number
     M = data.shape[1]
 
 #_______________________________Whitenning the sample__________________________
-
     data = data/devt
 
 #________________________________Barycenter______________________________________
-
-    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), nmin=int(grid*30/M))
+    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), nmin=int(30/free(Rt)))
     #seed = barycenter_hist(grid, design, data)
     
     if len(seed) > 2:

@@ -9,7 +9,9 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 ##### IMPORT ######
 
 import warnings
-from numpy import sqrt, array, eye, matrix, identity, dot, diagonal, diagflat, median, mean, fabs, corrcoef, isnan, ravel
+from numpy import sqrt, array, eye, matrix, identity, dot, \
+diagonal, diagflat, median, mean, fabs, corrcoef, isnan, ravel
+
 from numpy import all as aall
 from numpy import sum as asum
 from numpy.linalg.linalg import LinAlgError
@@ -25,7 +27,7 @@ TINY = 1e-9
 #
 
 def free(R):
-    return ravel( R.shape[1]**2 /asum(R) )
+    return R.shape[1]**2 /asum(R)
 
 def pearson_R(X):
     r2 = corrcoef(zip(*X))**2
@@ -80,6 +82,8 @@ def stats(X):
 
     return ct, dev, S, R
  
+def shortcut(group, data): 
+    return stats(map(lambda j: data[j], group))
 
 def Invert(A):
 
@@ -89,9 +93,6 @@ def Invert(A):
        iA = diagflat( 1e0/(diagonal(A) + TINY) )
 
     return iA
-
-def shortcut(group, data): 
-    return stats(map(lambda j: data[j], group))
 
 #
 # G estimator (Abramowitz 1962)
@@ -109,7 +110,7 @@ def G(N, f, X, ct, iS):
 
     # G transformation:
     if aall(N*f > 100e0):
-       return  sqrt(2e0*z2) -  sqrt(2e0*f - 1e0)
+       return sqrt(2e0*z2) -  sqrt(2e0*f - 1e0) 
 
     elif aall(N*f >= 30e0) and aall(N*f <= 100e0):
        return ((z2/f)**(1e0/3) - (1e0 - (2e0/9)*f))/sqrt((2e0/9)*f)

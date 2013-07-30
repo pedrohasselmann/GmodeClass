@@ -33,8 +33,8 @@ class Gmode:
      G-mode Multivariate Clustering Method
      -------------------------------------
      
-     Developer : Pedro Henrique A Hasselman
-     Method Developer : A. I. Gavrishin and A. Coradini
+     Developer : Pedro Henrique A Hasselman (Hasselmann et al. 2013)
+     Method Developer : A. I. Gavrishin and A. Coradini (Coradini et al. 1977)
      
      WARNING: Minimum dependencies: Numpy 1.5, Scipy 0.9, matplotlib 1.0.1
      
@@ -47,7 +47,13 @@ class Gmode:
      
      Input Format
      -----------
-     The input file must be formatted as --> Designation / unique ID / variables / errors 
+     The input file must be formatted as --> Designation / unique ID / variables / errors
+     
+     Estimator
+     ---------
+     
+     Mahalonobis distance --> (X - b)' * S^-1 * (X - b)
+     S --> median covariance distance
 
      Function
      --------
@@ -71,7 +77,7 @@ class Gmode:
 
          if __name__ == '__main__':
             from support import main
-            #print("main")
+            print("main")
             par = main()
 
             self.filename = par.filename
@@ -85,7 +91,7 @@ class Gmode:
             self.load()
 
          else:
-            #print("imported")
+            print("imported")
 
             self.grid     = 2
             self.ulim     = 1e0
@@ -136,7 +142,7 @@ class Gmode:
          if len(arg) == 0:
             filename  = self.filename
          else:
-            filename  = arg["fname"]
+            filename  = arg["filename"]
 
          from operator import itemgetter
 
@@ -159,7 +165,7 @@ class Gmode:
 
          from kernel import classifying
          from plot_module import plot_map
-         from gmode_module import stats, shortcut, cov
+         from gmode_module import stats, shortcut, cov, free
 
          if len(arg) == 0:
 
@@ -216,7 +222,7 @@ class Gmode:
          cluster_members   = deque()
          cluster_stats     = deque()
 
-         #plot_map(0, [], [], elems, self.label)
+         plot_map(0, [], [], elems, q1, [], [], self.label)
          
          report.append('############################ Part I : Recognize Clusters and Classify ################################## \n ')
 
@@ -228,13 +234,13 @@ class Gmode:
 
                report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
 
-               clump, seed, report = classifying(q1, ulim, mlim, grid, design, array(elems), devt, report)
+               clump, seed, report = classifying(q1, ulim, mlim, grid, design, array(elems), devt, Rt, report)
 
                Na = len(clump)
 
-               if Na > 3 or Na >= len(seed) and Na != 0:
-                        #print("Barycenter size: ",len(seed))
-                        #print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
+               if Na > 3 and Na > 30/free(Rt) and Na >= len(seed) and Na != 0:
+                        print("Barycenter size: ",len(seed))
+                        print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
                         # Save cluster member indexes
                         cluster_members.append(map(lambda i: indexs[i], clump))
@@ -489,5 +495,5 @@ if __name__ == '__main__':
    gmode.plot()
    gmode.timeit()
    gmode.writelog()
-   gmode.dendrogram()
-   gmode.histogram()
+   #gmode.dendrogram()
+   #gmode.histogram()
