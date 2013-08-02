@@ -16,7 +16,7 @@ from support import make_dir
 from scipy.stats import norm as normal
 from collections import deque
 from numpy import array, sum, sqrt, zeros, genfromtxt, float64, all
-from file_module import l_to_s, pretty_print, WriteIt
+from file_module import l_to_s, pretty_print
 
 pathjoin = path.join
 
@@ -111,8 +111,8 @@ class Gmode:
          else:
 
             q1    = arg['q1']
-            ulim  = arg['ulim']   or 1e0
-            mlim  = arg['mlim'] or 1e0
+            ulim  = arg['ulim']  or 1e0
+            mlim  = arg['mlim']  or 1e0
             name  = arg['name']
 
          if ulim != 1e0 and mlim == 1e0:
@@ -161,7 +161,7 @@ class Gmode:
 
      ########################### START PROCEDURE #################################
 
-     def run(self, realtime_map='y', **arg):
+     def run(self, realtime_map='y', save='y', **arg):
 
          from kernel import classifying
          from plot_module import plot_map
@@ -169,20 +169,19 @@ class Gmode:
 
          if len(arg) == 0:
 
-            if __name__ != '__main__': self.load()
-            q1        =  self.q1
-            grid      =  self.grid
-            ulim      =  self.ulim
-            mlim    =  self.mlim
+            q1     =  self.q1
+            grid   =  self.grid
+            ulim   =  self.ulim
+            mlim   =  self.mlim
 
          else:
 
-            q1      = arg['q1']
-            grid    = arg['grid']
-            ulim    = arg['ulim']
-            mlim    = arg['mlim']
+            q1    = arg['q1']
+            grid  = arg['grid']
+            ulim  = arg['ulim']
+            mlim  = arg['mlim']
 
-            self.load(**arg)
+         if save == 'y': self.load(**arg)
 
          #################################################   
          
@@ -210,7 +209,7 @@ class Gmode:
          #print(Se)
 
          ################# Write Into Log #################
-         
+         print(q1, ulim)
          gmode_clusters =["Clump   N                median                      st. dev."]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
          report.append(" S.D.: "+str(devt))
@@ -222,7 +221,7 @@ class Gmode:
          cluster_members   = deque()
          cluster_stats     = deque()
 
-         plot_map(0, [], [], elems, q1, [], [], self.label)
+         if realtime_map == 'y': plot_map(0, [], [], elems, q1, [], [], self.label)
          
          report.append('############################ Part I : Recognize Clusters and Classify ################################## \n ')
 
@@ -239,8 +238,8 @@ class Gmode:
                Na = len(clump)
 
                if Na > 3 and Na > 30/free(Rt) and Na >= len(seed) and Na != 0:
-                        print("Barycenter size: ",len(seed))
-                        print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
+                        #print("Barycenter size: ",len(seed))
+                        #print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
                         # Save cluster member indexes
                         cluster_members.append(map(lambda i: indexs[i], clump))
@@ -495,5 +494,5 @@ if __name__ == '__main__':
    gmode.plot()
    gmode.timeit()
    gmode.writelog()
-   #gmode.dendrogram()
-   #gmode.histogram()
+   gmode.dendrogram()
+   gmode.histogram()
