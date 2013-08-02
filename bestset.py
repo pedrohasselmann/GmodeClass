@@ -18,7 +18,7 @@ def fit(q1_range, u_range):
     gmode.mlim = 0.3
     gmode.grid = 3
     
-    form = "{0:.2f} {1:.1f}  {2:3}  {2:3}  {3:.4f}".format
+    form = "{0:.2f} {1:.1f}  {2:3}  {3:3}  {4:.4f}".format
     report = deque(["q1  ulim  Nc  E  R"])
     for ulim in arange(*u_range):
         for q1 in arange(*q1_range):
@@ -34,7 +34,29 @@ def fit(q1_range, u_range):
 
     out.write(text)
 
+def plot():
+    import matplotlib.pyplot as plt
+    from numpy import genfromtxt
+    
+    q1, ulim, Nc, excluded, robust = genfromtxt("tests.txt", unpack=True, dtype=None)
+    
+    name = ['{0:.2f} {1:.1f}'.format(*item) for item in zip(g1, ulim)]
+    
+    plt.figure(figsize=(10,10),dpi=70)
+    
+    plt.plot(robust, Nc, "k.", label="Gmode Tests")
+    plt.text(robust, Nc, name)
+    
+    plt.xlabel("$N_{c}$")
+    plt.ylabel("Robustness")
+    plt.legend(loc=0)
+    plt.show()
+    plt.clf()
+    
+    
+
 if __name__ == "__main__":
     
-   fit([2.0,2.6,0.1],[0.5,0.8,0.1])
+   fit([2.8,2.9,0.1],[0.7,0.8,0.1])
+   plot()
     

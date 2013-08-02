@@ -62,6 +62,7 @@ class Gmode:
      Gmode.run()
      Gmode.evaluate()
      Gmode.extension()
+     Gmode.robustness()
      Gmode.classification_per_id()
      Gmode.timeit()
      Gmode.classification()
