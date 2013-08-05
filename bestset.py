@@ -18,7 +18,7 @@ def fit(q1_range, u_range):
     gmode.mlim = 0.3
     gmode.grid = 3
     
-    form = "{0:.2f} {1:.1f}  {2:3}  {3:3}  {4:.4f}".format
+    form = "{0:.2f} {1:.1f}  {2:3}  {3:4}  {4:.4f}".format
     report = deque(["q1  ulim  Nc  E  R"])
     for ulim in arange(*u_range):
         for q1 in arange(*q1_range):
@@ -28,28 +28,33 @@ def fit(q1_range, u_range):
             
             report.append(form(q1, ulim, len(gmode.cluster_stats), len(gmode.excluded), gmode.robust))
 
-    out = open("tests.txt","w")
+    out = open(path.join("TESTS","tests.txt"),"w")
 
     text = '\n'.join(list(report))
 
     out.write(text)
 
-def plot():
+def plot(highlight=[]):
     import matplotlib.pyplot as plt
-    from numpy import genfromtxt
+    from numpy import loadtxt
     
-    q1, ulim, Nc, excluded, robust = genfromtxt("tests.txt", unpack=True, dtype=None)
+    q1, ulim, Nc, excluded, robust = loadtxt(path.join("TESTS","tests2.txt"), unpack=True, dtype=None, skiprows=1)
     
-    name = ['{0:.2f} {1:.1f}'.format(*item) for item in zip(g1, ulim)]
+    name = ['({0:.2f},\n {1:.1f})'.format(*item) for item in zip(q1, ulim)]
     
-    plt.figure(figsize=(10,10),dpi=70)
+    plt.figure(figsize=(10,10),dpi=100)
     
-    plt.plot(robust, Nc, "k.", label="Gmode Tests")
-    plt.text(robust, Nc, name)
-    
+    plt.plot(Nc, robust, "k.", markersize=2, label="Gmode Tests ($G_{q_{1}}, upperlimit$)")
+    [plt.text(Nc[n], robust[n], texto, fontsize=7, fontweight='black', style='italic') for n, texto in enumerate(name)]
+
+    if len(highlight) != 0:
+       for test in highlight:
+           highl = plt.plot(test[0], test[1], color="red", marker="o", markersize=4.5)     
+
+    highl[0].set_label("Highlighted tests")
     plt.xlabel("$N_{c}$")
     plt.ylabel("Robustness")
-    plt.legend(loc=0)
+    plt.legend(loc=0, numpoints=1, scatterpoints=1)
     plt.show()
     plt.clf()
     
@@ -57,6 +62,6 @@ def plot():
 
 if __name__ == "__main__":
     
-   fit([2.8,2.9,0.1],[0.7,0.8,0.1])
-   plot()
+   #fit([1.6,1.9,0.1],[0.5,0.8,0.1])
+   plot(highlight=[[44, 0.0469], [36, 0.0634]])
     

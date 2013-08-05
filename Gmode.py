@@ -396,19 +396,14 @@ class Gmode:
          print("Excluded : ", len(sample) - len(N))
          self.report.append("\n Totally Excluded: "+str(len(sample) - len(N)))
 
-     ############### ROBUST TEST ##################
+     ############### ROBUSTNESS PARAMETER ##################
      
      def robustness(self):
-         ''' Measuring robustness '''
+         ''' Measuring robustness. '''
        
          from gmode_module import robust_parameter as rpar
          
-         # cluster variance array:
-         cl_var = array(map(lambda x: x[1], self.cluster_stats))
-         # cluster size dictionary:
-         cl_size = array([len(cluster) for cluster in self.cluster_members])
-         
-         self.robust = rpar(cl_size, cl_var)
+         self.robust = rpar(self.cluster_members, self.cluster_stats, array(self.elems))
          
      ################# OUTPUT #####################
 
@@ -487,7 +482,7 @@ if __name__ == '__main__':
   
    gmode  = Gmode()
    gmode.load_data()
-   gmode.run(realtime_map="y")
+   gmode.run(realtime_map="y", save="y")
    gmode.evaluate()
    #gmode.extension()
    gmode.classification_per_id()

@@ -9,14 +9,12 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 ##### IMPORT ######
 
 import warnings
-from numpy import sqrt, array, eye, matrix, identity, dot, \
-diagonal, diagflat, median, mean, fabs, corrcoef, isnan, ravel
+from numpy import array, sqrt, eye, matrix, dot, \
+diagonal, diagflat, median, fabs, corrcoef, isnan, ravel
 
 from numpy import all as aall
 from numpy import sum as asum
 from numpy.linalg.linalg import LinAlgError
-from numpy.linalg import solve
-from itertools import product, chain
 from collections import deque
 
 
@@ -40,8 +38,7 @@ def pearson_R(X):
 
     return matrix(r2)
 
-def Robust_R(X, ct, dev):
-  
+def Robust_R(X, ct, dev):  
     ''' Shevlyakov 1997 - On a Robust Estimation of Correlation Coeficient'''
     warnings.simplefilter("ignore")
     
@@ -77,10 +74,10 @@ def stats(X):
     #X   = array(X)
     ct  = median(X, axis=0)      
     S   = cov(X, ct)
-    dev = sqrt(diagonal(S))
-    R   = Robust_R(X, ct, dev)
+    std = sqrt(diagonal(S))
+    R   = Robust_R(X, ct, std)
 
-    return ct, dev, S, R
+    return ct, std, S, R
  
 def shortcut(group, data): 
     return stats(map(lambda j: data[j], group))
@@ -99,7 +96,6 @@ def Invert(A):
 #
 
 def G(N, f, X, ct, iS):
-
     ''' G parameter --> Transforms a X2 estimator to a Gaussian estimator '''
 
     #z2  = iR * asum( ( (X - ct) / (iS + TINY) )**2  )     # Z2 estimator
@@ -128,21 +124,43 @@ def hyp_test(N, q1, f, index, x, ct, iS):
        return index
 
        
-def robust_parameter(N, dev):
-    ''' Parameter to measure the robustness of a G-mode test.
+def robust_parameter(clusters, stats, elems):
+    ''' Parameter to measure robustness of a G-mode test.
         
-        The parameter is given by the weighted average:
+        The parameter is given by the weighted average plus a normality estimator:
         
-        P = SUM( N^-1 * var ) / SUM( N^-1 )
+        P1 = SUM( N * var ) / SUM( N )
+        P2 = SUM( N^-1 * var ) / SUM( N^-1 ) 
+        P3 = SUM( kstest(cluster, gaussian) )
+        P = (P1/w1 + P2/w2 + P3/w3) / (w1^-1 + w2^-1 + w3^-1)
     '''
+    from scipy.stats import shapiro
+    from math import sqrt
+    from itertools import izip
     
-    var = asum(dev**2, axis=1)
-    iN  = 1e0/N
+    shap, N, var = deque(), deque(), deque()
+    for members, cl in izip(clusters, stats):
+        # cluster size array
+        N.append(len(members))
+        # cluster variance array
+        var.append(asum(cl[1]**2))
+        # shapiro-wilk test:
+        W_vec = array([shapiro(elems[members][n])[0]**2 for n in xrange(len(elems[0]))])
+        # inversed shapiro-wilk W statistic.
+        shap.append( sqrt(asum(1e0/W_vec)) )
+
+    shap, N, var = array(shap), array(N), array(var)
     
-    return asum( iN * var ) / asum(iN) + asum( N * var ) / asum(N)
+    w1 =  sqrt(asum(mad(var, median(var))**2))
+    w3 =  mad(shap, median(shap))
+ 
+    p1 = asum( N * var ) / asum(N)
+    p2 = asum( var/N ) / asum(1e0/N)
+    p3 = median(shap)
+    
+    return (p1/w1 + p2/w1 + p3/w3) / (2e0/w1 + 1e0/w3)
     
 def collapse_classification(clusters, ID):
-
     ''' Returns a dictionary of classification per ID '''
 
     cat = dict()
