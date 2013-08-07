@@ -28,7 +28,7 @@ def fit(q1_range, u_range):
             
             report.append(form(q1, ulim, len(gmode.cluster_stats), len(gmode.excluded), gmode.robust))
 
-    out = open(path.join("TESTS","tests.txt"),"w")
+    out = open(path.join("TESTS","tests.txt"),"w+")
 
     text = '\n'.join(list(report))
 
@@ -44,12 +44,13 @@ def plot(highlight=[]):
     
     plt.figure(figsize=(10,10),dpi=100)
     
-    plt.plot(Nc, robust, "k.", markersize=2, label="Gmode Tests ($G_{q_{1}}, upperlimit$)")
-    [plt.text(Nc[n], robust[n], texto, fontsize=7, fontweight='black', style='italic') for n, texto in enumerate(name)]
+    plt.plot(Nc, robust, "k.", markersize=4, alpha=0.7, label="Gmode Tests ($G_{q_{1}}, upperlimit$)")
 
     if len(highlight) != 0:
-       for test in highlight:
-           highl = plt.plot(test[0], test[1], color="red", marker="o", markersize=4.5)     
+       for n, texto in enumerate(name):
+           if all([True if item[0] == q1[n] and item[1] == ulim[n] else False for item in highlight]):
+              highl = plt.plot(Nc[n], robust[n], color="red", marker="o", markersize=4.5)
+              plt.text(Nc[n], robust[n], texto, fontsize=8, fontweight='black', style='italic')
 
     highl[0].set_label("Highlighted tests")
     plt.xlabel("$N_{c}$")
@@ -62,6 +63,6 @@ def plot(highlight=[]):
 
 if __name__ == "__main__":
     
-   #fit([1.6,1.9,0.1],[0.5,0.8,0.1])
-   plot(highlight=[[44, 0.0469], [36, 0.0634]])
+   #fit([1.9,2.0,0.1],[0.5,1.0,0.1])
+   plot(highlight=[[2.5, 0.5]])
     

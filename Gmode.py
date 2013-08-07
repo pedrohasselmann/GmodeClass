@@ -447,8 +447,8 @@ class Gmode:
          from plot_module import plot_spectral
          from matplotlib.pyplot import close
          
-         for n in xrange(len(self.cluster_members)):
-             elems_group = array(map(lambda j: self.elems[j], self.cluster_members[n]))
+         for n, cl in enumerate(self.cluster_members):
+             elems_group = array(map(lambda j: self.elems[j], cl))
              
              plot_spectral(n+1, self.cluster_stats[n], elems_group, self.label)
          

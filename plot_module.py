@@ -145,7 +145,7 @@ def plot_spectral(n, stats, data, link):
 
     x, y = deque(), deque()
     
-    plt.figure(figsize=(10,9),dpi=30)
+    plt.figure(figsize=(10,9))
     #plt.xlim(-1,data.shape[1])
     plt.ylim(lim[0],lim[1])
     plt.xlabel(*xtitle)
@@ -160,22 +160,24 @@ def plot_spectral(n, stats, data, link):
             x.extend(xy[1])
             x.append(None)
 
-    plt.plot(x, y, 'k-')
+    plt.plot(x, y, 'k-', alpha=0.4)
 
-    # Class Central Tendency e Total Deviation:
-    if norm != None: 
-       ct, dev = ainsert(stats[0],norm[0],norm[1]), ainsert(stats[1],norm[0],0e0)
-    else:
-       ct, dev = stats[0], stats[1]
+    #Cluster boxplot:
+    ct, dev = stats[0], stats[1]
 
-    plt.errorbar(axis,ct,yerr = dev,fmt='o',color='r',ecolor='r',elinewidth=3)
+    axis_box = list()
+    axis_box.extend(axis)
+    axis_box.pop(norm[0])
+    
+    plt.errorbar(axis_box,ct,yerr = dev,fmt='o',color='r',ecolor='r',elinewidth=3)
+    plt.boxplot(data, notch=True, positions=axis_box) #, usermedians=stats[0])
 
     # Save figures:
     if n == 0:
        plt.show()
     else:
        try:
-          plt.savefig(pathjoin("TESTS",link,"plots",str(len(data))+'_clump'+str(n)+'_'+link+'.png'),format='png')
+          plt.savefig(pathjoin("TESTS",link,"plots",str(len(data))+'_clump'+str(n)+'_'+link+'.png'),format='png', dpi=60)
           #plt.savefig(pathjoin("TESTS",label,'Graph'+str(n)+'.png'),format='png')
        except OverflowError:
           pass
