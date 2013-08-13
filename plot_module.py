@@ -23,7 +23,8 @@ pathjoin = path.join
 
 option = config('config.cfg', 'PlotConfig')
 
-lim   = map(float, option["lim"])
+ylim   = map(float, option["ylim"])
+xlim   = map(float, option["xlim"])
 
 try:
    norm  = [int(option["norm"][0]), float(option["norm"][1])]
@@ -121,8 +122,8 @@ def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
            plot_cluster(cov[n-1:n+1, n-1:n+1], ct[n-1:n+1], 1e0, linestyle='solid', linewidth=1)          
            plot_cluster(cov[n-1:n+1, n-1:n+1], ct[n-1:n+1], q1, linestyle='solid', linewidth=2)
             
-        plt.xlim(lim[0], lim[1])
-        plt.ylim(lim[0], lim[1])
+        plt.xlim(ylim[0], ylim[1])
+        plt.ylim(ylim[0], ylim[1])
         
         if label != None:
            plt.ylabel(label[n])
@@ -134,8 +135,10 @@ def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
     plt.savefig(pathjoin("TESTS",link,"maps",str(Nc)+'.png'),format='png')
     plt.clf()
 
-def plot_spectral(n, stats, data, link):
+def plot_spectral(n, stats, data, link, per=[20, 80]):
     ''' The spectral variable plot of central tendency and members of a given cluster.'''
+    
+    from scipy.stats import scoreatpercentile
 
     def pairwise(iterable):
         "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -143,24 +146,38 @@ def plot_spectral(n, stats, data, link):
         next(b, None)
         return izip(a, b)
 
+    #Ql = array([scoreatpercentile(data[:,I], per[0], limit=(0,3.00)) for I in xrange(data.shape[1])])
+    #Qh = array([scoreatpercentile(data[:,I], per[1], limit=(0,3.00)) for I in xrange(data.shape[1])])
+    #print(stats[0], Ql, Qh)
+    
     x, y = deque(), deque()
+    x_out, y_out = deque(), deque()
     
     plt.figure(figsize=(10,9))
-    #plt.xlim(-1,data.shape[1])
-    plt.ylim(lim[0],lim[1])
+    plt.xlim(xlim[0],xlim[1])
+    plt.ylim(ylim[0],ylim[1])
     plt.xlabel(*xtitle)
     plt.ylabel(*ytitle)
     plt.title('Clump '+str(n)+' Na='+str(data.shape[0]))
 
     for item in data:
         if norm != None : item = ainsert(item,norm[0],norm[1])
-        for xy in izip(pairwise(item),pairwise(axis)):
-            y.extend(xy[0])
-            y.append(None)
-            x.extend(xy[1])
-            x.append(None)
+            
+        '''if any([True for I, Q in izip(item,Ql) if I < Q]) or any([True for I, Q in izip(item,Qh) if I > Q]):
+            for xy in izip(pairwise(item),pairwise(axis)):
+               y_out.extend(xy[0])
+               y_out.append(None)
+               x_out.extend(xy[1])
+               x_out.append(None)'''
+        #else:
+           for xy in izip(pairwise(item),pairwise(axis)):
+               y.extend(xy[0])
+               y.append(None)
+               x.extend(xy[1])
+               x.append(None)
 
-    plt.plot(x, y, 'k-', alpha=0.4)
+    plt.plot(x, y, 'k-', alpha=0.7)
+    #plt.plot(x_out, y_out, 'g*')
 
     #Cluster boxplot:
     ct, dev = stats[0], stats[1]
@@ -169,15 +186,16 @@ def plot_spectral(n, stats, data, link):
     axis_box.extend(axis)
     axis_box.pop(norm[0])
     
-    plt.errorbar(axis_box,ct,yerr = dev,fmt='o',color='r',ecolor='r',elinewidth=3)
-    plt.boxplot(data, notch=True, positions=axis_box) #, usermedians=stats[0])
+    plt.errorbar(axis_box,ct,yerr = dev,fmt='o',color='r',ecolor='r', linewidth= 2, elinewidth=3)
+    #plt.boxplot(data, notch=True, positions=axis_box) #, usermedians=stats[0])
+    
 
     # Save figures:
     if n == 0:
        plt.show()
     else:
        try:
-          plt.savefig(pathjoin("TESTS",link,"plots",str(len(data))+'_clump'+str(n)+'_'+link+'.png'),format='png', dpi=60)
+          plt.savefig(pathjoin("TESTS",link,"plots",'clump'+str(n)+'_'+link+'.png'),format='png', dpi=60)
           #plt.savefig(pathjoin("TESTS",label,'Graph'+str(n)+'.png'),format='png')
        except OverflowError:
           pass
