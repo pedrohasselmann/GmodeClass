@@ -135,7 +135,7 @@ def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
     plt.savefig(pathjoin("TESTS",link,"maps",str(Nc)+'.png'),format='png')
     plt.clf()
 
-def plot_spectral(n, stats, data, link, per=[20, 80]):
+def plot_spectral(n, stats, data, link, per=[10, 90]):
     ''' The spectral variable plot of central tendency and members of a given cluster.'''
     
     from scipy.stats import scoreatpercentile
@@ -146,12 +146,11 @@ def plot_spectral(n, stats, data, link, per=[20, 80]):
         next(b, None)
         return izip(a, b)
 
-    #Ql = array([scoreatpercentile(data[:,I], per[0], limit=(0,3.00)) for I in xrange(data.shape[1])])
-    #Qh = array([scoreatpercentile(data[:,I], per[1], limit=(0,3.00)) for I in xrange(data.shape[1])])
-    #print(stats[0], Ql, Qh)
+    #max_points = amax(data, axis=0)
+    #min_points = amin(data, axis=0)
     
     x, y = deque(), deque()
-    x_out, y_out = deque(), deque()
+    #x_out, y_out = deque(), deque()
     
     plt.figure(figsize=(10,9))
     plt.xlim(xlim[0],xlim[1])
@@ -161,23 +160,24 @@ def plot_spectral(n, stats, data, link, per=[20, 80]):
     plt.title('Clump '+str(n)+' Na='+str(data.shape[0]))
 
     for item in data:
-        if norm != None : item = ainsert(item,norm[0],norm[1])
             
-        '''if any([True for I, Q in izip(item,Ql) if I < Q]) or any([True for I, Q in izip(item,Qh) if I > Q]):
+        '''if any([True for I, Q in izip(item,max_points) if I == Q]) or any([True for I, Q in izip(item,min_points) if I == Q]):
+            if norm != None : item = ainsert(item,norm[0],norm[1])
             for xy in izip(pairwise(item),pairwise(axis)):
                y_out.extend(xy[0])
                y_out.append(None)
                x_out.extend(xy[1])
                x_out.append(None)'''
-        #else:
-           for xy in izip(pairwise(item),pairwise(axis)):
-               y.extend(xy[0])
-               y.append(None)
-               x.extend(xy[1])
-               x.append(None)
+        if norm != None : item = ainsert(item,norm[0],norm[1])
+        for xy in izip(pairwise(item),pairwise(axis)):
+            y.extend(xy[0])
+            y.append(None)
+            x.extend(xy[1])
+            x.append(None)
 
-    plt.plot(x, y, 'k-', alpha=0.7)
-    #plt.plot(x_out, y_out, 'g*')
+    plt.plot(x, y, 'k-', alpha=0.6)
+    #plt.plot(axis, max_points, 'k-')
+    #plt.plot(axis, min_points, 'k-')
 
     #Cluster boxplot:
     ct, dev = stats[0], stats[1]
@@ -240,7 +240,7 @@ def histogram(Y, cluster_sizes, link):
 
     host.legend(title=link)
 
-    plt.savefig(pathjoin("TESTS",link,"plots",'hist_'+link+'.png'),format='png')
+    plt.savefig(pathjoin("TESTS",link,"plots",'hist_'+link+'.png'),format='png', dpi=90)
     #plt.show()
     plt.close("all")    
         
@@ -266,7 +266,7 @@ def dendrogram(D, link):
     plt.title(link)
 
     #plt.show()
-    plt.savefig(pathjoin("TESTS",link,"plots",'dendrogram_'+link+'.png'),format='png')
+    plt.savefig(pathjoin("TESTS",link,"plots",'dendrogram_'+link+'.png'),format='png', dpi=100)
     #plt.show()
     plt.close("all")
 
