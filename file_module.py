@@ -46,30 +46,24 @@ def FileKeys(dic,filename):
 
     print(str(filename)+".dat has been generated.")
 
-def WriteIt(pointer,text):
+def writeit(pointer,text):
 
     pointer.write('\n'.join([line for line in text]))
     pointer.close()
 
-def DumpQuery(query,filename):
+def pickle(query,path, filename):
 
    '''
       Pickle a dictionary.
    '''
-   try:
-       mkdir(path.join("Backup",""))
-   except OSError:
-       pass
 
    import cPickle as pickle
    
-   output = open(path.join("Backup","bkp_"+str(filename)+".pkl"),'wb')
-   
+   output = open(path.join("TESTS",path,filename+".pkl"),'wb')   
    pickle.dump(query,output, 2)
-
    output.close()
 
-def DumpRecover(filename):
+def unpickle(path,filename):
 
    '''
       Recover a Pickle of a dictionary.
@@ -77,10 +71,8 @@ def DumpRecover(filename):
    
    import cPickle as pickle
    
-   output = open(path.join("Backup",str(filename)+".pkl"),'rb')
-   
-   rec = pickle.load(output)
-   
+   output = open(path.join("TESTS",path,filename+".pkl"),'rb')   
+   rec = pickle.load(output)   
    output.close()
    
    return rec

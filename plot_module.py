@@ -146,11 +146,12 @@ def plot_spectral(n, stats, data, link, per=[10, 90]):
         next(b, None)
         return izip(a, b)
 
-    #max_points = amax(data, axis=0)
-    #min_points = amin(data, axis=0)
+    data = insert(data, norm[0], norm[1], axis=1)
+    max_points = amax(data, axis=0)
+    min_points = amin(data, axis=0)
     
     x, y = deque(), deque()
-    #x_out, y_out = deque(), deque()
+    x_out, y_out = deque(), deque()
     
     plt.figure(figsize=(10,9))
     plt.xlim(xlim[0],xlim[1])
@@ -161,22 +162,23 @@ def plot_spectral(n, stats, data, link, per=[10, 90]):
 
     for item in data:
             
-        '''if any([True for I, Q in izip(item,max_points) if I == Q]) or any([True for I, Q in izip(item,min_points) if I == Q]):
+        if any([True for I, Q in izip(item,max_points) if I == Q]) or any([True for I, Q in izip(item,min_points) if I == Q]):
             if norm != None : item = ainsert(item,norm[0],norm[1])
             for xy in izip(pairwise(item),pairwise(axis)):
                y_out.extend(xy[0])
                y_out.append(None)
                x_out.extend(xy[1])
-               x_out.append(None)'''
-        if norm != None : item = ainsert(item,norm[0],norm[1])
-        for xy in izip(pairwise(item),pairwise(axis)):
-            y.extend(xy[0])
-            y.append(None)
-            x.extend(xy[1])
-            x.append(None)
+               x_out.append(None)
+        else:
+           if norm != None : item = ainsert(item,norm[0],norm[1])
+           for xy in izip(pairwise(item),pairwise(axis)):
+              y.extend(xy[0])
+              y.append(None)
+              x.extend(xy[1])
+              x.append(None)
 
-    plt.plot(x, y, 'k-', alpha=0.6)
-    #plt.plot(axis, max_points, 'k-')
+    plt.plot(x, y, 'k-', alpha=0.5)
+    plt.plot(x_out, y_out, 'go-', linewidth=2)
     #plt.plot(axis, min_points, 'k-')
 
     #Cluster boxplot:

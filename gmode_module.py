@@ -105,23 +105,23 @@ def G(N, f, X, ct, iS):
     z2 = asum( fabs( X * ravel( dot(iS, X ) ) ) )
 
     # G transformation:
-    if aall(N*f > 100e0):
+    if all(N*f > 100e0):
        return sqrt(2e0*z2) -  sqrt(2e0*f - 1e0) 
 
-    elif aall(N*f >= 30e0) and aall(N*f <= 100e0):
+    elif all(N*f >= 30e0) and all(N*f <= 100e0):
        return ((z2/f)**(1e0/3) - (1e0 - (2e0/9)*f))/sqrt((2e0/9)*f)
     
-    elif aall(N*f < 30e0):
+    elif all(N*f < 30e0):
        return 9e9
 
 #
 # G Hypothesis test
 #
 
-def hyp_test(N, q1, f, index, x, ct, iS):
-    if aall(G(N, f, x, ct, iS) < q1):
+def hyp_test(N, q1, f, key, x, ct, iS):
+    if all(G(N, f, x, ct, iS) < q1):
        #print(G(N, f, x, ct, iS))
-       return index
+       return key
 
        
 def robust_parameter(clusters, stats, elems):

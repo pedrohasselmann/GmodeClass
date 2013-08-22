@@ -15,7 +15,7 @@ from time import time
 from support import make_dir
 from scipy.stats import norm as normal
 from collections import deque
-from numpy import array, sum, sqrt, zeros, genfromtxt, float64, all
+from numpy import array, sum, sqrt, diagonal, zeros, genfromtxt, float64, all
 from file_module import l_to_s, pretty_print
 
 pathjoin = path.join
@@ -72,7 +72,7 @@ class Gmode:
      Gmode.histogram()
      '''
 
-     __version__ = 1.0
+     __version__ = 1.2
 
      def __init__(self):
 
@@ -126,13 +126,7 @@ class Gmode:
             self.label = 'q'+str(q1)+'_'+self.name
 
          mypath = pathjoin("TESTS",self.label)
-         make_dir(mypath)
-
-         self.clasf    = open(pathjoin(mypath,'gmode1_'+self.label+'.dat'),  'w')
-         self.clasf2   = open(pathjoin(mypath,'gmode2_'+self.label+'.dat'),  'w')
-         self.briefing = open(pathjoin(mypath,'clump_'+self.label+'.dat'),  'w')
-         self.log      = open(pathjoin(mypath,   'log_'+self.label+'.dat'),  'w')
-
+         make_dir(mypath)       
          make_dir(pathjoin(mypath,"plots",""))
          make_dir(pathjoin(mypath,"maps",""))
 
@@ -157,6 +151,7 @@ class Gmode:
 
          #self.elems  = [array(item[2:6], dtype=float64) for item in data]
          #self.errs   = [array(item[6:], dtype=float64) for item in data]
+         #print('unique elements: ', len(set(self.design)))
 
          self.indexs = range(len(self.design))
 
@@ -208,6 +203,7 @@ class Gmode:
          mlim = mlim * Se
 
          #print(Se)
+         #print(ctt, devt)
 
          ################# Write Into Log #################
          print(q1, ulim)
@@ -360,41 +356,32 @@ class Gmode:
 
      ###### Fulchignoni et al. (2000) Extension ######
 
-     def extension(self,**arg):
+     def interpretation(self,template,**arg):
+         ''' Fulchignoni et al. (2000) extension used to give a interpretion to clusters'''
+       
          from itertools import  imap
-         from plot_module import plot_map
          from gmode_module import Invert, free, hyp_test
 
          if len(arg) == 0:
             q1   = self.q1
          else:
             q1   = arg['q1']
-
+            
          cluster_members = self.cluster_members
-         excluded   = self.excluded
-         elems      = self.elems
-         sample = map(lambda j: elems[j], excluded)
+         cluster_stats   = self.cluster_stats
          
-         N = deque()
+         self.interpretation = dict()
 
-         for n, st in enumerate(self.cluster_stats):
-             iS = Invert(st[2]) #, Invert(st[3])
-             f = free(st[3])
-             #iR = f/st[1].size
-             #iS = st[1]
+         for n, stat in enumerate(cluster_stats):
+             iS = Invert(stat[2])
+             f = free(stat[3])
+             size =  len(cluster_members[n])
+
              selected = filter(lambda x: x != None, \
-                               imap(lambda ind, y: hyp_test(len(cluster_members[n]),q1,f,ind,y,st[0],iS), excluded, sample))
+                               imap(lambda key, y: hyp_test(size, q1, f, key, y, stat[0], iS), template.keys(), template.values()))
+           
+             self.interpretation[n] = selected
 
-             if len(selected) != 0: 
-                plot_map(1001+n, excluded, selected, elems, self.label)
-                cluster_members[n].extend(selected)
-                N.extend(selected)
-         
-         N = set(N)
-
-         self.report.append("\n Reclassified Excluded Sample Size: "+str(len(N)))
-         print("Excluded : ", len(sample) - len(N))
-         self.report.append("\n Totally Excluded: "+str(len(sample) - len(N)))
 
      ############### ROBUSTNESS PARAMETER ##################
      
@@ -407,17 +394,16 @@ class Gmode:
          
      ################# OUTPUT #####################
 
-     # Write classifications into a file:
      def classification(self):
          ''' Write classifications into a file '''
          
          cluster_members = self.cluster_members
-         writing         = self.clasf.write
+         f               = open(pathjoin(mypath,'gmode1_'+self.label+'.dat'),  'w')
          design          = self.design
          uniq_id         = self.uniq_id
          
-         [[writing(str('{0:7} {1:>10} {2:7} '+str(n+1)+'\n').format(ind,design[ind],uniq_id[ind])) for ind in cluster_members[n]] for n in range(len(cluster_members))]
-         self.clasf.close()   
+         [[f.write(str('{0:7} {1:>10} {2:7} '+str(n+1)+'\n').format(ind,design[ind],uniq_id[ind])) for ind in cluster_members[n]] for n in range(len(cluster_members))]
+         f.close()   
 
      def classification_per_id(self):
          from gmode_module import collapse_classification
@@ -430,16 +416,23 @@ class Gmode:
          form = "{0:>10} {1}".format
          [text.append(form(each,l_to_s(catalogue[each]))) for each in catalogue.keys()]
          
-         WriteIt(self.clasf2,text)
+         writeit(open(pathjoin("TESTS",self.label,'gmode2_'+self.label+'.dat'),  'w'), text)
 
      ################### Log #######################
 
      # Write into a file:
      def writelog(self):
          from file_module import WriteIt
+         from file_module import pickle
+
+         mypath = pathjoin("TESTS",self.label)
+             
+         writeit(open(pathjoin(mypath,   'log_'+self.label+'.dat'),  'w'),         self.report)
+         writeit(open(pathjoin(mypath, 'clump_'+self.label+'.dat'),  'w'), self.gmode_clusters)
+         writeit(open(pathjoin(mypath,'interp_'+self.label+'.dat'),  'w'), self.interpretation)
          
-         WriteIt(self.log,      self.report)
-         WriteIt(self.briefing, self.gmode_clusters)
+         pickle(self.cluster_stats, self.label, "cluster_stats")
+         pickle(self.cluster_members, self.label, "cluster_members")
 
      ################### Plot #######################
      
@@ -482,9 +475,9 @@ if __name__ == '__main__':
   
    gmode  = Gmode()
    gmode.load_data()
-   gmode.run(realtime_map="y", save="y")
+   gmode.run(realtime_map="n", save="y")
    gmode.evaluate()
-   #gmode.extension()
+   gmode.interpretation(templates=pathjoin("SDSSMOC",".pkl"))
    gmode.classification_per_id()
    gmode.classification()
    gmode.plot()
