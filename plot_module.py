@@ -146,9 +146,9 @@ def plot_spectral(n, stats, data, link, per=[10, 90]):
         next(b, None)
         return izip(a, b)
 
-    data = insert(data, norm[0], norm[1], axis=1)
     max_points = amax(data, axis=0)
     min_points = amin(data, axis=0)
+    data = ainsert(data, norm[0], norm[1], axis=1)
     
     x, y = deque(), deque()
     x_out, y_out = deque(), deque()
@@ -163,14 +163,12 @@ def plot_spectral(n, stats, data, link, per=[10, 90]):
     for item in data:
             
         if any([True for I, Q in izip(item,max_points) if I == Q]) or any([True for I, Q in izip(item,min_points) if I == Q]):
-            if norm != None : item = ainsert(item,norm[0],norm[1])
             for xy in izip(pairwise(item),pairwise(axis)):
                y_out.extend(xy[0])
                y_out.append(None)
                x_out.extend(xy[1])
                x_out.append(None)
         else:
-           if norm != None : item = ainsert(item,norm[0],norm[1])
            for xy in izip(pairwise(item),pairwise(axis)):
               y.extend(xy[0])
               y.append(None)

@@ -37,21 +37,17 @@ def FileQuery(query,filename):
   
    print(str(filename)+".dat has been generated.")
 
-def FileKeys(dic,filename):
+def writedict(dic, f):
+   
+   f.write('\n'.join(["{0} {1}".format(item, dic[item]) for item in dict.iterkeys(dic)]))
+   f.close()
 
-    log = open(path.join("Backup",str(filename)+".dat"),'w').write
+def writeit(text, f):
 
-    for item1 in dict.iterkeys(dic):
-        log("{0} \n".format(item1))
+   f.write('\n'.join([line for line in text]))
+   f.close()
 
-    print(str(filename)+".dat has been generated.")
-
-def writeit(pointer,text):
-
-    pointer.write('\n'.join([line for line in text]))
-    pointer.close()
-
-def pickle(query,path, filename):
+def pickle(query, test, filename):
 
    '''
       Pickle a dictionary.
@@ -59,11 +55,11 @@ def pickle(query,path, filename):
 
    import cPickle as pickle
    
-   output = open(path.join("TESTS",path,filename+".pkl"),'wb')   
+   output = open(path.join("TESTS",test,filename+".pkl"),'wb')   
    pickle.dump(query,output, 2)
    output.close()
 
-def unpickle(path,filename):
+def unpickle(test):
 
    '''
       Recover a Pickle of a dictionary.
@@ -71,7 +67,7 @@ def unpickle(path,filename):
    
    import cPickle as pickle
    
-   output = open(path.join("TESTS",path,filename+".pkl"),'rb')   
+   output = open(test,'rb')   
    rec = pickle.load(output)   
    output.close()
    

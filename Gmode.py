@@ -300,14 +300,15 @@ class Gmode:
          # Setting in self
          self.t0              = t0
          self.t1              = time()
+         # logs
          self.report          = report
          self.gmode_clusters  = gmode_clusters
+         # python objects
          self.cluster_members = cluster_members
          self.cluster_stats   = cluster_stats
          self.excluded        = excluded
          
-         # Robustness
-         
+         # Robustness        
          self.robustness()
          print("Robustness: ", self.robust)
          report.append("Robustness: "+str(self.robust))
@@ -315,12 +316,9 @@ class Gmode:
 
      ################### Evaluate Variables and discriminate it #####################
 
-     def evaluate(self,**arg):
+     def evaluate(self, q2=None):
 
-         if len(arg) == 0:
-            q2    = self.q2
-         else:
-            q2    = arg["q2"]
+         if q2 == None: q2 = self.q2
 
          if len(self.cluster_members) > 1:
 
@@ -354,23 +352,23 @@ class Gmode:
             self.Gc = Gc
             self.D2 = D2
 
-     ###### Fulchignoni et al. (2000) Extension ######
+     ###### INTERPRETATION ######
 
-     def interpretation(self,template,**arg):
+     def interpretation(self, templates, template_name, q1=None, pickle='n'):
          ''' Fulchignoni et al. (2000) extension used to give a interpretion to clusters'''
        
          from itertools import  imap
          from gmode_module import Invert, free, hyp_test
+         from file_module import pickle, unpickle, writedict
 
-         if len(arg) == 0:
-            q1   = self.q1
-         else:
-            q1   = arg['q1']
-            
+         if q1 == None:  q1  = self.q1
+
          cluster_members = self.cluster_members
          cluster_stats   = self.cluster_stats
          
-         self.interpretation = dict()
+         templ = unpickle(templates)
+         
+         interpretation = dict()
 
          for n, stat in enumerate(cluster_stats):
              iS = Invert(stat[2])
@@ -378,11 +376,13 @@ class Gmode:
              size =  len(cluster_members[n])
 
              selected = filter(lambda x: x != None, \
-                               imap(lambda key, y: hyp_test(size, q1, f, key, y, stat[0], iS), template.keys(), template.values()))
+                               imap(lambda key, y: hyp_test(size, q1, f, key, y, stat[0], iS), templ.keys(), templ.values()))
            
-             self.interpretation[n] = selected
+             interpretation[n+1] = selected
 
-
+         writedict(interpretation,open(pathjoin("TESTS",self.label,'interp_q'+str(q1)+'_'+template_name+'.dat'),  'w'))
+         pickle(interpretation, self.label, "interpretation_q"+str(q1)+'_'+template_name)
+             
      ############### ROBUSTNESS PARAMETER ##################
      
      def robustness(self):
@@ -398,7 +398,7 @@ class Gmode:
          ''' Write classifications into a file '''
          
          cluster_members = self.cluster_members
-         f               = open(pathjoin(mypath,'gmode1_'+self.label+'.dat'),  'w')
+         f               = open(pathjoin("TESTS",self.label,'gmode1_'+self.label+'.dat'),  'w')
          design          = self.design
          uniq_id         = self.uniq_id
          
@@ -407,7 +407,7 @@ class Gmode:
 
      def classification_per_id(self):
          from gmode_module import collapse_classification
-         from file_module import WriteIt
+         from file_module import writeit
 
          text = deque()
          
@@ -416,23 +416,23 @@ class Gmode:
          form = "{0:>10} {1}".format
          [text.append(form(each,l_to_s(catalogue[each]))) for each in catalogue.keys()]
          
-         writeit(open(pathjoin("TESTS",self.label,'gmode2_'+self.label+'.dat'),  'w'), text)
+         writeit(text, open(pathjoin("TESTS",self.label,'gmode2_'+self.label+'.dat'),  'w'))
 
      ################### Log #######################
 
      # Write into a file:
      def writelog(self):
-         from file_module import WriteIt
+         from file_module import writeit, writedict
          from file_module import pickle
 
          mypath = pathjoin("TESTS",self.label)
              
-         writeit(open(pathjoin(mypath,   'log_'+self.label+'.dat'),  'w'),         self.report)
-         writeit(open(pathjoin(mypath, 'clump_'+self.label+'.dat'),  'w'), self.gmode_clusters)
-         writeit(open(pathjoin(mypath,'interp_'+self.label+'.dat'),  'w'), self.interpretation)
+         writeit(self.report,          open(pathjoin(mypath,   'log_'+self.label+'.dat'),  'w'))
+         writeit(self.gmode_clusters,  open(pathjoin(mypath, 'clump_'+self.label+'.dat'),  'w'))
          
-         pickle(self.cluster_stats, self.label, "cluster_stats")
+         pickle(self.cluster_stats,   self.label, "cluster_stats")
          pickle(self.cluster_members, self.label, "cluster_members")
+         pickle(self.excluded,        self.label, "excluded")
 
      ################### Plot #######################
      
@@ -477,7 +477,10 @@ if __name__ == '__main__':
    gmode.load_data()
    gmode.run(realtime_map="n", save="y")
    gmode.evaluate()
-   gmode.interpretation(templates=pathjoin("SDSSMOC",".pkl"))
+   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1e0)
+   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1.5)
+   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=2e0)
+   #gmode.interpretation(templates=pathjoin("SDSSMOC","carvano_templates.pkl"), q1=2.5, template_name="carvano")
    gmode.classification_per_id()
    gmode.classification()
    gmode.plot()
