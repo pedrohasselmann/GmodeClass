@@ -37,6 +37,12 @@ xtitle = option["xtitle"]
 ytitle = option["ytitle"]
 grid_size = int(*option["grid_size"])
 
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = tee(iterable)
+    next(b, None)
+    return izip(a, b)
+
 #
 # Plot clusters
 #
@@ -135,16 +141,10 @@ def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
     plt.savefig(pathjoin("TESTS",link,"maps",str(Nc)+'.png'),format='png')
     plt.clf()
 
-def plot_spectral(n, stats, data, link, per=[10, 90]):
+def plot_spectral(n, stats, data, link):
     ''' The spectral variable plot of central tendency and members of a given cluster.'''
     
-    from scipy.stats import scoreatpercentile
-
-    def pairwise(iterable):
-        "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-        a, b = tee(iterable)
-        next(b, None)
-        return izip(a, b)
+    #from scipy.stats import scoreatpercentile
 
     max_points = amax(data, axis=0)
     min_points = amin(data, axis=0)
@@ -203,9 +203,69 @@ def plot_spectral(n, stats, data, link, per=[10, 90]):
     plt.clf()
 
 #
-# Cluster Size Distribution
+# Cluster profile mosaic
 #
 
+def mosaic(cluster_members, data, link):
+    ''' Make a boxplot of central tendency and members of each cluster.'''
+  
+    import matplotlib.gridspec as gridspec
+    from math import sqrt, ceil
+    from numpy import amin, amax, median, std, insert
+    
+    kwargs = {'markersize':1, 'linestyle':'-','linewidth':1} 
+
+    data = array(data)
+    data = ainsert(data, norm[0], norm[1], axis=1)
+    
+    grid = int(ceil((sqrt(len(set(obs_tax.values()))))))
+    
+    fig = plt.figure(figsize=(10,10),dpi=quality)
+    plt.subplots_adjust(wspace=0.0, hspace=0.0)
+    gs = gridspec.GridSpec(grid, grid)
+
+    xy = list(product(range(grid), range(grid)))
+    
+    for members in cluster_members:
+        n = int(cluster)-1
+        var = data[members]
+        sub = plt.subplot(gs[xy[n][0],xy[n][1]])
+
+        #env_max  = amax(members, axis=0)
+        #env_min  = amin(members, axis=0)
+        
+        for xy in izip(pairwise(item),pairwise(axis)):
+            y.extend(xy[0])
+            y.append(None)
+            x.extend(xy[1])
+            x.append(None)       
+
+        plt.plot(x, y, 'k-', alpha=0.5)
+        plt.errorbar(axis, median(var, axis=0), fmt='bo-', yerr=std(var, axis=0), label=str(members.shape[0]), **kwargs)
+        #plt.plot(axis, env_max, 'ko-', alpha=0.4, **kwargs)
+        #plt.plot(axis, env_min, 'ko-', alpha=0.4, **kwargs)
+        
+        if xy[n][0] == int((grid-1)/2) and xy[n][1] == 0:
+           plt.ylabel('Normalized Reflectance',fontsize=10,fontweight='black')         
+
+        if xy[n][1] == 0:
+           vis1 = True
+        else:
+           vis1 = False
+        
+        plt.setp(sub.get_yticklabels(), fontsize=6, visible=vis1)
+        plt.setp(sub.get_xticklabels(), fontsize=6, visible=True)
+        plt.ylim(0.2,1.8)
+        plt.xlim(axis[0]-0.1, axis[-1]+0.1)
+        plt.legend(loc=4, title=cluster, prop={'size':5,'weight':'black'}, numpoints=1,frameon=False)
+
+    plt.suptitle('Wavelength ($microns$)',fontsize=10,fontweight='black')
+    plt.savefig(pathjoin("TESTS",link,"plots","mosaic_"+link+".png"),format='png', dpi=250) 
+
+#
+# Cluster Size Distribution
+#
+    
 def histogram(Y, cluster_sizes, link):  
     ''' Plot histogram of cluster sizes and integrated standard deviation.'''
     

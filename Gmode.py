@@ -36,13 +36,13 @@ class Gmode:
      Developer : Pedro Henrique A Hasselman (Hasselmann et al. 2013)
      Method Developer : A. I. Gavrishin and A. Coradini (Coradini et al. 1977)
      
-     WARNING: Minimum dependencies: Numpy 1.5, Scipy 0.9, matplotlib 1.0.1
+     WARNING: Minimal dependencies: Numpy 1.5, Scipy 0.9, matplotlib 1.0.1
      
      Parameters
      ----------
      q1 : Float. Input critical value.
-     ulim : Float between 0.0 and 1.0. Upper Deviation Limit.
-     mlim : Float between 0.0 and 1.0. Minimum Deviation Limit.
+     ulim : Float between 0.0 and 1.0. Upper Std. Deviation Limit.
+     mlim : Float between 0.0 and 1.0. Minimum Std. Deviation Limit.
      grid : Integer. Number of folds in barycenter_density search.
      
      Input Format
@@ -72,7 +72,7 @@ class Gmode:
      Gmode.histogram()
      '''
 
-     __version__ = 1.2
+     __version__ = 1.4
 
      def __init__(self):
 
@@ -354,7 +354,7 @@ class Gmode:
 
      ###### INTERPRETATION ######
 
-     def interpretation(self, templates, template_name, q1=None, pickle='n'):
+     def interpretation(self, templates, template_name, q1=None, pickle='n', artifact=None):
          ''' Fulchignoni et al. (2000) extension used to give a interpretion to clusters'''
        
          from itertools import  imap
@@ -437,14 +437,15 @@ class Gmode:
      ################### Plot #######################
      
      def plot(self):
-         from plot_module import plot_spectral
+         from plot_module import plot_spectral, mosaic
          from matplotlib.pyplot import close
          
-         for n, cl in enumerate(self.cluster_members):
-             elems_group = array(map(lambda j: self.elems[j], cl))
+         #for n, cl in enumerate(self.cluster_members):
+         #    elems_group = array(map(lambda j: self.elems[j], cl))
              
-             plot_spectral(n+1, self.cluster_stats[n], elems_group, self.label)
+         #    plot_spectral(n+1, self.cluster_stats[n], elems_group, self.label)
          
+         mosaic(self.cluster_members, self.elems, self.label)
          close("all")
          
      def dendrogram(self):
@@ -472,19 +473,19 @@ class Gmode:
 # END of the method
 
 if __name__ == '__main__':
-  
-   gmode  = Gmode()
-   gmode.load_data()
-   gmode.run(realtime_map="n", save="y")
-   gmode.evaluate()
-   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1e0)
-   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1.5)
-   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=2e0)
+   pass
+   #gmode  = Gmode()
+   #gmode.load_data()
+   #gmode.run(realtime_map="n", save="y")
+   #gmode.evaluate()
+   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1e0, template_name="carvano")
+   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1.5, template_name="carvano")
+   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=2e0, template_name="carvano")
    #gmode.interpretation(templates=pathjoin("SDSSMOC","carvano_templates.pkl"), q1=2.5, template_name="carvano")
-   gmode.classification_per_id()
-   gmode.classification()
-   gmode.plot()
-   gmode.timeit()
-   gmode.writelog()
-   gmode.dendrogram()
-   gmode.histogram()
+   #gmode.classification_per_id()
+   #gmode.classification()
+   #gmode.plot()
+   #gmode.timeit()
+   #gmode.writelog()
+   #gmode.dendrogram()
+   #gmode.histogram()

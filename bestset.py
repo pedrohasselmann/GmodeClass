@@ -8,13 +8,13 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 from os import path
 from collections import deque
 
-def fit(q1_range, u_range):
+def fit(where_data, q1_range, u_range):
     import Gmode as Gm
     from numpy import arange
     
     gmode = Gm.Gmode()
     
-    gmode.load_data(filename=path.join("SDSSMOC","lists","MOC4_3quartile_refl_num2.dat"))
+    gmode.load_data(filename=where_data)
     gmode.mlim = 0.3
     gmode.grid = 3
     
@@ -34,7 +34,7 @@ def fit(q1_range, u_range):
 
     out.write(text)
 
-def plot(highlight=[]):
+def plot(highlight=None):
     import matplotlib.pyplot as plt
     from numpy import loadtxt
     
@@ -45,13 +45,13 @@ def plot(highlight=[]):
     plt.figure(figsize=(10,10),dpi=100)   
     plt.plot(Nc, robust, "ko", markersize=4, alpha=0.7, label="Gmode Tests ($G_{q_{1}}, upperlimit$)")
 
-    if len(highlight) != 0:
+    if highlight != None:
        for n, texto in enumerate(name):
            if any([True if item[0] == q1[n] and item[1] == ulim[n] else False for item in highlight]):
               highl = plt.plot(Nc[n], robust[n], color="red", marker="o", markersize=7)
               plt.text(Nc[n], robust[n], texto, fontsize=9, fontweight='black', style='italic')  
 
-    highl[0].set_label("Highlighted tests")
+       highl[0].set_label("Highlighted tests")
     plt.xlabel("$N_{c}$")
     plt.ylabel("Robustness")
     plt.legend(loc=0, numpoints=1, scatterpoints=1)
@@ -61,7 +61,8 @@ def plot(highlight=[]):
     
 
 if __name__ == "__main__":
-    
-   #fit([1.9,2.0,0.1],[0.5,1.0,0.1])
-   plot(highlight=[[2.5, 0.5], [2.4, 0.6], [1.8, 0.8]])
+   
+   data_path = path.join("SDSSMOC","lists","MOC4_3quartile_refl_num.dat")
+   fit(data_path, [1.2,1.8,0.1],[0.1,0.5,0.1])
+   #plot(highlight=[[2.5, 0.5], [2.4, 0.6], [1.8, 0.8]])
     
