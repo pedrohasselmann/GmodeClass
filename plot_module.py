@@ -13,7 +13,7 @@ from os import path
 from numpy import array, amin, amax, degrees, sqrt, arctan2, zeros, median, std, insert
 from numpy import insert as ainsert
 from numpy.linalg import eigh
-from itertools import tee, izip
+from itertools import tee, izip, product
 import matplotlib.pyplot as plt
 from matplotlib.patches import Arc
 from collections import deque
@@ -212,37 +212,33 @@ def mosaic(cluster_members, data, link):
     import matplotlib.gridspec as gridspec
     from math import sqrt, ceil
     
-    kwargs = {'markersize':1, 'linestyle':'-','linewidth':1} 
+    kwargs = {'markersize':0.7, 'linestyle':'-','linewidth':0.7} 
 
     data = array(data)
     data = ainsert(data, norm[0], norm[1], axis=1)
     
-    grid = int(ceil((sqrt(len(set(obs_tax.values()))))))
+    grid = int(ceil(sqrt(len(cluster_members))))
     
-    fig = plt.figure(figsize=(10,10),dpi=quality)
+    fig = plt.figure(figsize=(10,10))
     plt.subplots_adjust(wspace=0.0, hspace=0.0)
     gs = gridspec.GridSpec(grid, grid)
-
     xy = list(product(range(grid), range(grid)))
     
-    for members in cluster_members:
-        n = int(cluster)-1
-        var = data[members]
+    for n, members in enumerate(cluster_members):
         sub = plt.subplot(gs[xy[n][0],xy[n][1]])
 
-        #env_max  = amax(members, axis=0)
-        #env_min  = amin(members, axis=0)
+        meas = data[members]
         
-        for xy in izip(pairwise(item),pairwise(axis)):
-            y.extend(xy[0])
-            y.append(None)
-            x.extend(xy[1])
-            x.append(None)       
+        x, y = deque(), deque()
+        for item in meas:
+            for line in izip(pairwise(item),pairwise(axis)):
+                y.extend(line[0])
+                y.append(None)
+                x.extend(line[1])
+                x.append(None)       
 
-        plt.plot(x, y, 'k-', alpha=0.5)
-        plt.errorbar(axis, median(var, axis=0), fmt='bo-', yerr=std(var, axis=0), label=str(members.shape[0]), **kwargs)
-        #plt.plot(axis, env_max, 'ko-', alpha=0.4, **kwargs)
-        #plt.plot(axis, env_min, 'ko-', alpha=0.4, **kwargs)
+        plt.plot(x, y, 'k-', alpha=0.5, **kwargs)
+        plt.errorbar(axis, median(meas, axis=0), fmt='bo-', yerr=std(meas, axis=0), label=str(len(members)), **kwargs)
         
         if xy[n][0] == int((grid-1)/2) and xy[n][1] == 0:
            plt.ylabel('Normalized Reflectance',fontsize=10,fontweight='black')         
@@ -256,10 +252,10 @@ def mosaic(cluster_members, data, link):
         plt.setp(sub.get_xticklabels(), fontsize=6, visible=True)
         plt.ylim(0.2,1.8)
         plt.xlim(axis[0]-0.1, axis[-1]+0.1)
-        plt.legend(loc=4, title=cluster, prop={'size':5,'weight':'black'}, numpoints=1,frameon=False)
+        plt.legend(loc=4, title=str(n+1), prop={'size':5,'weight':'black'}, numpoints=1,frameon=False)
 
     plt.suptitle('Wavelength ($microns$)',fontsize=10,fontweight='black')
-    plt.savefig(pathjoin("TESTS",link,"plots","mosaic_"+link+".png"),format='png', dpi=250) 
+    plt.savefig(pathjoin("TESTS",link,"plots","mosaic_"+link+".png"),format='png', dpi=300) 
 
 #
 # Cluster Size Distribution
