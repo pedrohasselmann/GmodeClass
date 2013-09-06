@@ -352,10 +352,41 @@ class Gmode:
             self.Gc = Gc
             self.D2 = D2
 
+     ###### Fulchignoni et al. (2000) Extension ######
+ 
+     def extension(self,q1=None):      
+         from itertools import  imap, chain
+         from gmode_module import Invert, free, hyp_test
+ 
+         if q1 == None:  q1  = self.q1
+           
+         cluster_members = self.cluster_members
+         sample = map(lambda j: self.elems[j], excluded)
+          
+         self.reclass = deque()
+         for n, st in enumerate(self.cluster_stats):
+             self.reclass.append(list())
+             iS = Invert(st[2]) #, Invert(st[3])
+             f = free(st[3])
+             size = len(cluster_members[n])
+             
+             selected = filter(lambda x: x != None, \
+                               imap(lambda ind, y: hyp_test(size,q1,f,ind,y,st[0],iS), self.excluded, sample))
+
+ 
+             if len(selected) != 0: 
+                self.reclass[n].extend(selected)
+         
+         N = set(chain.from_iterable(reclass))
+ 
+         self.report.append("\n Reclassified Excluded Sample Size: "+str(len(N)))
+         print("Reclassified : ",len(N))
+         self.report.append("\n Totally Excluded: "+str(len(sample) - len(N)))
+
      ###### INTERPRETATION ######
 
      def interpretation(self, templates, template_name, q1=None, pickle='n', artifact=None):
-         ''' Fulchignoni et al. (2000) extension used to give a interpretion to clusters'''
+         ''' Fulchignoni et al. (2000) extension used to give a correspondence to clusters'''
        
          from itertools import  imap
          from gmode_module import Invert, free, hyp_test
@@ -474,18 +505,18 @@ class Gmode:
 
 if __name__ == '__main__':
    pass
-   #gmode  = Gmode()
-   #gmode.load_data()
-   #gmode.run(realtime_map="n", save="y")
-   #gmode.evaluate()
+   gmode  = Gmode()
+   gmode.load_data()
+   gmode.run(realtime_map="n", save="y")
+   gmode.evaluate()
    #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1e0, template_name="carvano")
    #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1.5, template_name="carvano")
    #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=2e0, template_name="carvano")
    #gmode.interpretation(templates=pathjoin("SDSSMOC","carvano_templates.pkl"), q1=2.5, template_name="carvano")
-   #gmode.classification_per_id()
-   #gmode.classification()
-   #gmode.plot()
-   #gmode.timeit()
-   #gmode.writelog()
-   #gmode.dendrogram()
-   #gmode.histogram()
+   gmode.classification_per_id()
+   gmode.classification()
+   gmode.plot()
+   gmode.timeit()
+   gmode.writelog()
+   gmode.dendrogram()
+   gmode.histogram()

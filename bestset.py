@@ -42,7 +42,8 @@ def plot(highlight=None):
     
     name = ['({0:.2f}, {1:.1f})'.format(*item) for item in zip(q1, ulim)]
 
-    plt.figure(figsize=(10,10),dpi=100)   
+    plt.figure(figsize=(10,10),dpi=100)
+    plt.subplot(210)
     plt.plot(Nc, robust, "ko", markersize=4, alpha=0.7, label="Gmode Tests ($G_{q_{1}}, upperlimit$)")
 
     if highlight != None:
@@ -55,6 +56,13 @@ def plot(highlight=None):
     plt.xlabel("$N_{c}$")
     plt.ylabel("Robustness")
     plt.legend(loc=0, numpoints=1, scatterpoints=1)
+
+    plt.subplot(211)
+    plt.plot(Nc, excluded, "ko", markersize=4, alpha=0.7, label="Gmode Tests ($G_{q_{1}}, upperlimit$)")
+    plt.xlabel("$N_{c}$")
+    plt.ylabel("Number of Excluded")
+    plt.legend(loc=0, numpoints=1, scatterpoints=1)
+    
     plt.show()
     plt.clf()
     
@@ -63,6 +71,6 @@ def plot(highlight=None):
 if __name__ == "__main__":
    
    data_path = path.join("SDSSMOC","lists","MOC4_3quartile_refl_num.dat")
-   fit(data_path, [1.2,1.8,0.1],[0.1,0.5,0.1])
-   #plot(highlight=[[2.5, 0.5], [2.4, 0.6], [1.8, 0.8]])
+   #fit(data_path, [1.2,1.8,0.1],[0.5,0.9,0.1])
+   plot()
     

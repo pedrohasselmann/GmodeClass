@@ -10,7 +10,7 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 
 from os import path
 #import scipy.stats as stats
-from numpy import array, amin, amax, degrees, sqrt, arctan2, zeros
+from numpy import array, amin, amax, degrees, sqrt, arctan2, zeros, median, std, insert
 from numpy import insert as ainsert
 from numpy.linalg import eigh
 from itertools import tee, izip
@@ -109,7 +109,7 @@ def plot_cluster(cov, ct, q1, ax=None, **kwargs):
 def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
     ''' Density distribution of sample superposed with initial seed and identified cluster.'''    
     
-    plt.figure(figsize=(6,10),dpi=60)
+    plt.figure(figsize=(6,10))
     
     data  = array(data)
     clump = array(clump)
@@ -138,7 +138,7 @@ def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
     cb=plt.colorbar(orientation='horizontal',fraction=0.10,pad=0.3,drawedges=False)
     cb.set_label('log10(N)')
     
-    plt.savefig(pathjoin("TESTS",link,"maps",str(Nc)+'.png'),format='png')
+    plt.savefig(pathjoin("TESTS",link,"maps",str(Nc)+'.png'),format='png', dpi=60)
     plt.clf()
 
 def plot_spectral(n, stats, data, link):
@@ -211,7 +211,6 @@ def mosaic(cluster_members, data, link):
   
     import matplotlib.gridspec as gridspec
     from math import sqrt, ceil
-    from numpy import amin, amax, median, std, insert
     
     kwargs = {'markersize':1, 'linestyle':'-','linewidth':1} 
 
