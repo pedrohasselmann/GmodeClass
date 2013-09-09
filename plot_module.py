@@ -212,7 +212,7 @@ def mosaic(cluster_members, data, link):
     import matplotlib.gridspec as gridspec
     from math import sqrt, ceil
     
-    kwargs = {'markersize':0.7, 'linestyle':'-','linewidth':0.7} 
+    kwargs = {'markersize':0.7, 'linestyle':'-','linewidth':0.5} 
 
     data = array(data)
     data = ainsert(data, norm[0], norm[1], axis=1)
@@ -255,7 +255,7 @@ def mosaic(cluster_members, data, link):
         plt.legend(loc=4, title=str(n+1), prop={'size':5,'weight':'black'}, numpoints=1,frameon=False)
 
     plt.suptitle('Wavelength ($microns$)',fontsize=10,fontweight='black')
-    plt.savefig(pathjoin("TESTS",link,"plots","mosaic_"+link+".png"),format='png', dpi=300) 
+    plt.savefig(pathjoin("TESTS",link,"plots","mosaic_"+link+".png"),format='png', dpi=400) 
 
 #
 # Cluster Size Distribution
@@ -311,18 +311,19 @@ def dendrogram(D, link):
     lbl = [str(n+1) for n in xrange(D.shape[0])]
 
     # Compute and plot dendrogram.
-    fig = plt.figure(figsize=(8,14),dpi=80)
+    fig = plt.figure(figsize=(8,14))
     ax1 = fig.add_axes([0.04,0.04,0.9,0.9])
     Y = sch.median(D)
     Z1 = sch.dendrogram(Y, orientation='right',labels=lbl)
+    #print(sch.leaves_list(Y))
     ax1.set_xticks([])
+    plt.setp(ax1.get_yticklabels(), fontsize=7)
     ax1.set_ylabel("Identified Cluster")
     ax1.set_xlabel("Cluster Parity")
     plt.title(link)
 
     #plt.show()
-    plt.savefig(pathjoin("TESTS",link,"plots",'dendrogram_'+link+'.png'),format='png', dpi=100)
-    #plt.show()
+    plt.savefig(pathjoin("TESTS",link,"plots",'dendrogram_'+link+'.png'),format='png', dpi=250)
     plt.close("all")
 
 

@@ -324,6 +324,7 @@ class Gmode:
 
             from eval_variables import verifying
             from gmode_module import stats
+            from file_module import pickle
 
             cluster_members = self.cluster_members
             elems      = self.elems
@@ -336,22 +337,19 @@ class Gmode:
 
             d2, Gc, D2 = verifying(q2, cluster_members, array(elems)/(stats(elems)[1])) 
 
-            report.append('Matrix D2: \n'+pretty_print(D2))
-
             j = 0
             for i in range(len(elems[0])):
-                report.append('\nMatrix Gc for variable '+str(i+1)+10*" "+' Weight: '+str(d2[i].sum()/d2.sum())+'\n'+pretty_print(Gc[i]))
+                report.append('\nMatrix Gc for variable '+str(i+1)+10*" "+' Weight: '+str(d2[i].sum()/d2.sum())+'\n') #+pretty_print(Gc[i]))
+                
 
                 if all(Gc[i] < q2):
                    report.append('\n Variable '+str(i+1)+' is statistically redundant.')
                    print('Variable '+str(i+1)+' is statistically redundant.')
                    j += 1
-            
-            # setting in self
 
-            self.Gc = Gc
-            self.D2 = D2
-
+            pickle(D2, self.label, "D2")
+            pickle(Gc, self.label, "Gc")
+                   
      ###### Fulchignoni et al. (2000) Extension ######
  
      def extension(self,q1=None):      
@@ -385,7 +383,7 @@ class Gmode:
 
      ###### INTERPRETATION ######
 
-     def interpretation(self, templates, template_name, q1=None, pickle='n', artifact=None):
+     def correspondence(self, templates, template_name, q1=None, pickle='n', artifact=None):
          ''' Fulchignoni et al. (2000) extension used to give a correspondence to clusters'''
        
          from itertools import  imap
@@ -411,8 +409,8 @@ class Gmode:
            
              interpretation[n+1] = selected
 
-         writedict(interpretation,open(pathjoin("TESTS",self.label,'interp_q'+str(q1)+'_'+template_name+'.dat'),  'w'))
-         pickle(interpretation, self.label, "interpretation_q"+str(q1)+'_'+template_name)
+         writedict(interpretation,open(pathjoin("TESTS",self.label,'corr_q'+str(q1)+'_'+template_name+'.dat'),  'w'))
+         pickle(interpretation, self.label, "corr_q"+str(q1)+'_'+template_name)
              
      ############### ROBUSTNESS PARAMETER ##################
      
@@ -481,8 +479,9 @@ class Gmode:
          
      def dendrogram(self):
          from plot_module import dendrogram
-          
-         dendrogram(self.D2, self.label)
+         from file_module import unpickle
+         
+         dendrogram(unpickle("D2"), self.label)
      
      def histogram(self):
          from plot_module import histogram
@@ -509,10 +508,10 @@ if __name__ == '__main__':
    gmode.load_data()
    gmode.run(realtime_map="n", save="y")
    gmode.evaluate()
-   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1e0, template_name="carvano")
-   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1.5, template_name="carvano")
-   #gmode.interpretation(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=2e0, template_name="carvano")
-   #gmode.interpretation(templates=pathjoin("SDSSMOC","carvano_templates.pkl"), q1=2.5, template_name="carvano")
+   #gmode.correspondence(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1e0, template_name="carvano")
+   #gmode.correspondence(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1.5, template_name="carvano")
+   #gmode.correspondence(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=2e0, template_name="carvano")
+   #gmode.correspondence(templates=pathjoin("SDSSMOC","carvano_templates.pkl"), q1=2.5, template_name="carvano")
    gmode.classification_per_id()
    gmode.classification()
    gmode.plot()
