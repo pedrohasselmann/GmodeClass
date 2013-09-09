@@ -59,7 +59,7 @@ def pickle(query, test, filename):
    pickle.dump(query,output, 2)
    output.close()
 
-def unpickle(name):
+def unpickle(test, filename):
 
    '''
       Recover a Pickle of a dictionary.
@@ -67,7 +67,7 @@ def unpickle(name):
    
    import cPickle as pickle
    
-   output = open(name+".pkl",'rb')   
+   output = open(path.join("TESTS",test,filename+".pkl"),'rb')   
    rec = pickle.load(output)   
    output.close()
    

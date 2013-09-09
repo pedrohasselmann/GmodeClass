@@ -481,7 +481,7 @@ class Gmode:
          from plot_module import dendrogram
          from file_module import unpickle
          
-         dendrogram(unpickle("D2"), self.label)
+         dendrogram(unpickle(self.label,"D2"), self.label)
      
      def histogram(self):
          from plot_module import histogram
