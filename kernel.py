@@ -23,7 +23,6 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
 
     N = data.shape[0]    # Sample Size
     M = data.shape[1]    # Variable size
-
 #_______________________________Whitenning the sample__________________________
     data = data/devt
 
@@ -68,10 +67,8 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
 
 # Once upper limit is reached the iteration is haulted.
           if ulim < 1e0 and aany(stdc >= ulim):
+             #print(Na, seed, stdc)
              return cluster, seed, report
-
-          #plot_clump(i+1, [ctg*devt, devg*devt, Rg], elems[cluster], pathjoin(label,"plots","Clump"+str(Nc)))
-             
 
 # G hypothesis test:
 
@@ -84,6 +81,10 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
 
           Na = len(cluster)
 
+# Once upper limit is reached the iteration is haulted.
+          if ulim < 1e0 and aany(stdc >= ulim):
+             return cluster, seed, report
+          
           report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(stdc, 3))+"\nf: "+str(f)+"\n")
           
           i += 1

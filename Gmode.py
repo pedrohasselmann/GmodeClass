@@ -201,12 +201,12 @@ class Gmode:
          ctt, devt, St, Rt = stats(elems)
          Se = cov(self.errs/devt, zeros(M), 1e0)
          
-         mlim = mlim * Se
+         mlim = (mlim**2) * Se
 
-         #print(Se)
+         #print(sqrt(mlim))
          #print(ctt, devt)
 
-         ################# Write Into Log #################
+         ################# START REPORT #################
          print(q1, ulim)
          clusters_report =["Clump   N                median                      st. dev."]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
@@ -227,18 +227,18 @@ class Gmode:
                
          Nc = 0
          while Nc == 0 or N >= (M - 1):
-               Nc+=1
-
-               report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
 
                cluster, seed, report = classifying(q1, ulim, mlim, grid, design, array(elems), devt, Rt, report)
 
                Na = len(cluster)
 
                if Na > 3 and Na > 30/free(Rt) and Na >= len(seed) and Na != 0:
+                        report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
+                        Nc+=1
+                         
                         #print("Barycenter size: ",len(seed))
                         #print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
- 
+                           
                         # Save cluster member indexes
                         cluster_members.append(map(lambda i: indexs[i], cluster))
 
@@ -267,7 +267,6 @@ class Gmode:
                         clusters_report.append(str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
      
                else:
-                        Nc -= 1
                         # Exclude clump members from the sample:
                         if len(seed) > 0 and Na > 0: # Has initial seed and members.
                            report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], cluster)))
