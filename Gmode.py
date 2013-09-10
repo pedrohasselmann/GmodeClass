@@ -208,7 +208,7 @@ class Gmode:
 
          ################# Write Into Log #################
          print(q1, ulim)
-         gmode_clusters =["Clump   N                median                      st. dev."]
+         clusters_report =["Clump   N                median                      st. dev."]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
          report.append(" S.D.: "+str(devt))
          report.append("Upper Limit: "+str(ulim))
@@ -233,7 +233,7 @@ class Gmode:
 
                cluster, seed, report = classifying(q1, ulim, mlim, grid, design, array(elems), devt, Rt, report)
 
-               Na = len(clump)
+               Na = len(cluster)
 
                if Na > 3 and Na > 30/free(Rt) and Na >= len(seed) and Na != 0:
                         #print("Barycenter size: ",len(seed))
@@ -264,13 +264,13 @@ class Gmode:
                         
                         report.append("Cov. Matrix: \n"+str(cluster_stats[-1][2])+"\n")
 
-                        gmode_clusters.append(str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
+                        clusters_report.append(str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
      
                else:
                         Nc -= 1
                         # Exclude clump members from the sample:
                         if len(seed) > 0 and Na > 0: # Has initial seed and members.
-                           report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], clump)))
+                           report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], cluster)))
                                         
                            excluded.extend(map(lambda i: indexs[i], cluster))                         
                            
@@ -302,7 +302,7 @@ class Gmode:
          self.t0              = t0
          # logs
          self.report          = report
-         self.gmode_clusters  = gmode_clusters
+         self.clusters_report  = clusters_report
          # python objects
          self.cluster_members = cluster_members
          self.cluster_stats   = cluster_stats
@@ -454,8 +454,8 @@ class Gmode:
 
          mypath = pathjoin("TESTS",self.label)
              
-         writeit(self.report,          open(pathjoin(mypath,   'log_'+self.label+'.dat'),  'w'))
-         writeit(self.gmode_clusters,  open(pathjoin(mypath, 'clump_'+self.label+'.dat'),  'w'))
+         writeit(self.report,          open(pathjoin(mypath, 'log_'+self.label+'.dat'),      'w'))
+         writeit(self.clusters_report, open(pathjoin(mypath, 'cluster_'+self.label+'.dat'),  'w'))
          
          pickle(self.cluster_stats,   self.label, "cluster_stats")
          pickle(self.cluster_members, self.label, "cluster_members")
@@ -505,14 +505,10 @@ if __name__ == '__main__':
    gmode.load_data()
    gmode.run(realtime_map="n", save="y")
    gmode.evaluate()
-   #gmode.correspondence(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1e0, template_name="carvano")
-   #gmode.correspondence(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=1.5, template_name="carvano")
-   #gmode.correspondence(templates=pathjoin("SDSSMOC","bus_templates.pkl"), q1=2e0, template_name="carvano")
-   #gmode.correspondence(templates=pathjoin("SDSSMOC","carvano_templates.pkl"), q1=2.5, template_name="carvano")
    gmode.classification_per_id()
    gmode.classification()
-   gmode.plot()
    gmode.timeit()
    gmode.writelog()
+   gmode.plot()
    gmode.dendrogram()
    gmode.histogram()

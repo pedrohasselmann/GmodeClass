@@ -35,7 +35,7 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
        report.append("Barycenter: "+l_to_s(map(lambda j: design[j], seed)))
        #print("Barycenter: "+l_to_s(map(lambda j: design[j], seed)))
        Na = len(seed)
-       group = list(seed)
+       cluster = list(seed)
     else:      
        return [], seed, report
 
@@ -53,7 +53,7 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
 
 # *c --> cluster statistics
 
-          ctc, stdc, Sc, Rc = stats(data[group])
+          ctc, stdc, Sc, Rc = stats(data[cluster])
 
           Na_prior02 = Na_prior
           Na_prior   = Na
@@ -68,9 +68,9 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
 
 # Once upper limit is reached the iteration is haulted.
           if ulim < 1e0 and aany(stdc >= ulim):
-             return group, seed, report
+             return cluster, seed, report
 
-          #plot_clump(i+1, [ctg*devt, devg*devt, Rg], elems[group], pathjoin(label,"plots","Clump"+str(Nc)))
+          #plot_clump(i+1, [ctg*devt, devg*devt, Rg], elems[cluster], pathjoin(label,"plots","Clump"+str(Nc)))
              
 
 # G hypothesis test:
@@ -79,15 +79,15 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
           f = free(Rc)
           #Rg = f/M
 
-          group = filter(lambda x: x != None, \
+          cluster = filter(lambda x: x != None, \
                   imap(lambda ind, y: hyp_test(N,q1,f,ind,y,ctc,iSc), range(N), data))
 
-          Na = len(group)
+          Na = len(cluster)
 
           report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(stdc, 3))+"\nf: "+str(f)+"\n")
           
           i += 1
 
-    return group, seed, report
+    return cluster, seed, report
 
 # End of the Central Method

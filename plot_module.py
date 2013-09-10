@@ -158,7 +158,7 @@ def plot_spectral(n, stats, data, link):
     plt.ylim(ylim[0],ylim[1])
     plt.xlabel(*xtitle)
     plt.ylabel(*ytitle)
-    plt.title('Clump '+str(n)+' Na='+str(data.shape[0]))
+    plt.title('Cluster '+str(n)+' Na='+str(data.shape[0]))
 
     for item in data:
             
@@ -195,8 +195,7 @@ def plot_spectral(n, stats, data, link):
        plt.show()
     else:
        try:
-          plt.savefig(pathjoin("TESTS",link,"plots",'clump'+str(n)+'_'+link+'.png'),format='png', dpi=60)
-          #plt.savefig(pathjoin("TESTS",label,'Graph'+str(n)+'.png'),format='png')
+          plt.savefig(pathjoin("TESTS",link,"plots",'cluster'+str(n)+'_'+link+'.png'),format='png', dpi=60)
        except OverflowError:
           pass
     
@@ -255,7 +254,11 @@ def mosaic(cluster_members, data, link):
         plt.legend(loc=4, title=str(n+1), prop={'size':5,'weight':'black'}, numpoints=1,frameon=False)
 
     plt.suptitle('Wavelength ($microns$)',fontsize=10,fontweight='black')
-    plt.savefig(pathjoin("TESTS",link,"plots","mosaic_"+link+".png"),format='png', dpi=400) 
+    
+    try:
+        plt.savefig(pathjoin("TESTS",link,"plots","mosaic_"+link+".png"),format='png', dpi=300)
+    except OverflowError:
+        pass
 
 #
 # Cluster Size Distribution
