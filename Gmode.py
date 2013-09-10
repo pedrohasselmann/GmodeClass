@@ -58,10 +58,11 @@ class Gmode:
      Function
      --------
      Class Gmode
-     Gmode.load_data()
-     Gmode.run()
-     Gmode.evaluate()
-     Gmode.extension()
+     Gmode.load_data(filename)
+     Gmode.run(realtime_map='n', save='y', **arg)
+     Gmode.evaluate(q2=None)
+     Gmode.extension(q1=None)
+     Gmode.correspondence(templates, template_name, q1=None, artifact=None)
      Gmode.robustness()
      Gmode.classification_per_id()
      Gmode.timeit()
@@ -157,7 +158,7 @@ class Gmode:
 
      ########################### START PROCEDURE #################################
 
-     def run(self, realtime_map='y', save='y', **arg):
+     def run(self, realtime_map='n', save='y', **arg):
 
          from kernel import classifying
          from plot_module import plot_map
@@ -230,7 +231,7 @@ class Gmode:
 
                report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
 
-               clump, seed, report = classifying(q1, ulim, mlim, grid, design, array(elems), devt, Rt, report)
+               cluster, seed, report = classifying(q1, ulim, mlim, grid, design, array(elems), devt, Rt, report)
 
                Na = len(clump)
 
@@ -239,19 +240,19 @@ class Gmode:
                         #print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
  
                         # Save cluster member indexes
-                        cluster_members.append(map(lambda i: indexs[i], clump))
+                        cluster_members.append(map(lambda i: indexs[i], cluster))
 
                         # save cluster statistics
-                        cluster_stats.append(shortcut(clump, elems))
+                        cluster_stats.append(shortcut(cluster, elems))
 
                         if realtime_map == 'y':
                            try:
-                              plot_map(Nc, clump, seed, elems, q1, cluster_stats[-1][0], cluster_stats[-1][2], self.label)
+                              plot_map(Nc, cluster, seed, elems, q1, cluster_stats[-1][0], cluster_stats[-1][2], self.label)
                            except IndexError:
                               pass
                         
                         # Exclude group members from the sample:
-                        for i in clump:  elems[i], design[i], indexs[i] = None, None, None
+                        for i in cluster:  elems[i], design[i], indexs[i] = None, None, None
                         elems  = filter(lambda x: x!=None, elems)
                         design = filter(lambda x: x!=None, design)
                         indexs = filter(lambda x: x!=None, indexs)
@@ -268,21 +269,21 @@ class Gmode:
                else:
                         Nc -= 1
                         # Exclude clump members from the sample:
-                        if len(seed) > 0 and Na > 0:
+                        if len(seed) > 0 and Na > 0: # Has initial seed and members.
                            report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], clump)))
                                         
-                           excluded.extend(map(lambda i: indexs[i], clump))                         
+                           excluded.extend(map(lambda i: indexs[i], cluster))                         
                            
-                           for i in clump:  elems[i], design[i], indexs[i] = None, None, None
+                           for i in cluster:  elems[i], design[i], indexs[i] = None, None, None
 
-                        elif len(seed) > 0 and Na == 0:
+                        elif len(seed) > 0 and Na == 0: # Has initial seed but no members.
                            report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], seed)))
                                         
                            excluded.extend(map(lambda i: indexs[i], seed))                         
                            
                            for i in seed:  elems[i], design[i], indexs[i] = None, None, None
 
-                        elif len(seed) == 0:
+                        elif len(seed) == 0: # Does not have initial seed.
                            break
 
                         elems  = filter(lambda x: x!=None, elems)
@@ -299,7 +300,6 @@ class Gmode:
          
          # Setting in self
          self.t0              = t0
-         self.t1              = time()
          # logs
          self.report          = report
          self.gmode_clusters  = gmode_clusters
@@ -326,24 +326,22 @@ class Gmode:
             from gmode_module import stats
             from file_module import pickle
 
-            cluster_members = self.cluster_members
             elems      = self.elems
             #errs      = self.errs
-            report     = self.report
 
-            report.append('\n############################## Part II : Verifying the variable significance ###############################\n')
+            self.report.append('\n############################## Part II : Verifying the variable significance ###############################\n')
 
-            report.append("Confidence level q2: "+str(normal.cdf(q2) - normal.cdf(-q2)))
+            self.report.append("Confidence level q2: "+str(normal.cdf(q2) - normal.cdf(-q2)))
 
-            d2, Gc, D2 = verifying(q2, cluster_members, array(elems)/(stats(elems)[1])) 
+            d2, Gc, D2 = verifying(q2, self.cluster_members, self.cluster_stats, array(elems)/(stats(elems)[1])) 
 
             j = 0
             for i in range(len(elems[0])):
-                report.append('\nMatrix Gc for variable '+str(i+1)+10*" "+' Weight: '+str(d2[i].sum()/d2.sum())+'\n') #+pretty_print(Gc[i]))
+                self.report.append('\nMatrix Gc for variable '+str(i+1)+10*" "+' Weight: '+str(d2[i].sum()/d2.sum())+'\n') #+pretty_print(Gc[i]))
                 
 
                 if all(Gc[i] < q2):
-                   report.append('\n Variable '+str(i+1)+' is statistically redundant.')
+                   self.report.append('\n Variable '+str(i+1)+' is statistically redundant.')
                    print('Variable '+str(i+1)+' is statistically redundant.')
                    j += 1
 
@@ -381,9 +379,9 @@ class Gmode:
          print("Reclassified : ",len(N))
          self.report.append("\n Totally Excluded: "+str(len(sample) - len(N)))
 
-     ###### INTERPRETATION ######
+     ###### GIVE MEANING TO YOUR CLUSTERS ######
 
-     def correspondence(self, templates, template_name, q1=None, pickle='n', artifact=None):
+     def correspondence(self, templates, template_name, q1=None, artifact=None):
          ''' Fulchignoni et al. (2000) extension used to give a correspondence to clusters'''
        
          from itertools import  imap
@@ -503,7 +501,6 @@ class Gmode:
 # END of the method
 
 if __name__ == '__main__':
-   pass
    gmode  = Gmode()
    gmode.load_data()
    gmode.run(realtime_map="n", save="y")

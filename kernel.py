@@ -21,8 +21,8 @@ from numpy import round as arround
 def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
     ''' Iterative procedure of sample clustering'''
 
-    N = data.shape[0]    # Sample Number
-    M = data.shape[1]
+    N = data.shape[0]    # Sample Size
+    M = data.shape[1]    # Variable size
 
 #_______________________________Whitenning the sample__________________________
     data = data/devt
@@ -66,6 +66,10 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
                     Sc[n,n] = minlim[n,n]
                     stdc[n] = sqrt(minlim[n,n])
 
+# Once upper limit is reached the iteration is haulted.
+          if ulim < 1e0 and aany(stdc >= ulim):
+             return group, seed, report
+
           #plot_clump(i+1, [ctg*devt, devg*devt, Rg], elems[group], pathjoin(label,"plots","Clump"+str(Nc)))
              
 
@@ -81,11 +85,6 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
           Na = len(group)
 
           report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(stdc, 3))+"\nf: "+str(f)+"\n")
-
-# Once upper limit is reached the iteration is haulted.
-          if i != 0 and ulim < 1e0:
-             if aany(stdc >= ulim):
-                return group, seed, report
           
           i += 1
 
