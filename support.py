@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Filename: io.py
+# Filename: support.py
 # Shell and config manipulation
 # Author: Pedro H. A. Hasselmann
 
@@ -43,6 +43,6 @@ def make_dir(pth):
     try:
         os.mkdir(pth)
     except OSError:
-        pass    
-
+        pass 
+             
 # END

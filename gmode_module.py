@@ -119,7 +119,7 @@ def G(N, f, X, ct, iS):
 #
 
 def hyp_test(N, q1, f, key, x, ct, iS):
-    if aall(G(N, f, x, ct, iS) < q1):
+    if aall(G(N, f, x, ct, iS) <= q1):
        #print(G(N, f, x, ct, iS))
        return key
 

@@ -307,7 +307,7 @@ def histogram(Y, cluster_sizes, link):
 #
 
 def dendrogram(D, link):
-    ''' Plot dendrogram of cluster's parity.'''
+    ''' Plot dendrogram of cluster parity.'''
   
     import scipy.cluster.hierarchy as sch
 
@@ -316,10 +316,11 @@ def dendrogram(D, link):
     # Compute and plot dendrogram.
     fig = plt.figure(figsize=(8,14))
     ax1 = fig.add_axes([0.04,0.04,0.9,0.9])
+    
     Y = sch.median(D)
-    Z1 = sch.dendrogram(Y, orientation='right',labels=lbl)
-    #print(sch.leaves_list(Y))
-    ax1.set_xticks([])
+    Z = sch.dendrogram(Y, orientation='right',labels=lbl)
+    
+    #ax1.set_xticks([])
     plt.setp(ax1.get_yticklabels(), fontsize=7)
     ax1.set_ylabel("Identified Cluster")
     ax1.set_xlabel("Cluster Parity")
@@ -327,7 +328,6 @@ def dendrogram(D, link):
 
     #plt.show()
     plt.savefig(pathjoin("TESTS",link,"plots",'dendrogram_'+link+'.png'),format='png', dpi=250)
-    plt.close("all")
-
-
+    plt.close("all")  
+    
 # END

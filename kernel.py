@@ -23,11 +23,12 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
 
     N = data.shape[0]    # Sample Size
     M = data.shape[1]    # Variable size
+
 #_______________________________Whitenning the sample__________________________
     data = data/devt
 
 #________________________________Barycenter______________________________________
-    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), nmin=int(30/free(Rt)))
+    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), minlim)
     #seed = barycenter_hist(grid, design, data)
     
     if len(seed) > 2:
@@ -42,10 +43,7 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
 
     i = 0
     Rc, Na_prior, Na_prior02  = eye(M), Na, Na
-    
-    #make_dir(pathjoin("TESTS",label,"plots","Clump"+str(Nc),""))
 
-    #(round(asum(Rg),6) != round(asum(R_prior),6) and Na != Na_prior) (round(Rg,6) != round(R_prior,6) and Na != Na_prior and Na != Na_prior02)
     while (i == 0 or (round(asum(Rc),6) != round(asum(R_prior),6) and Na != Na_prior and Na != Na_prior02)) and i < 40 and Na > 2:
 
           R_prior = Rc
@@ -76,14 +74,14 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
           f = free(Rc)
           #Rg = f/M
 
-          cluster = filter(lambda x: x != None, \
-                  imap(lambda ind, y: hyp_test(N,q1,f,ind,y,ctc,iSc), range(N), data))
+          if Na*f > 30:
+             cluster = filter(lambda x: x != None, \
+                       imap(lambda ind, y: hyp_test(Na,q1,f,ind,y,ctc,iSc), range(N), data))
+          
+          else:
+             return cluster, seed, report
 
           Na = len(cluster)
-
-# Once upper limit is reached the iteration is haulted.
-          if ulim < 1e0 and aany(stdc >= ulim):
-             return cluster, seed, report
           
           report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(stdc, 3))+"\nf: "+str(f)+"\n")
           

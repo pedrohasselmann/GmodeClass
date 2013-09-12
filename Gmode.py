@@ -232,7 +232,7 @@ class Gmode:
 
                Na = len(cluster)
 
-               if Na > 3 and Na > 30/free(Rt) and Na >= len(seed) and Na != 0:
+               if Na > 3 and Na > 30/free(Rt):
                         report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
                         Nc+=1
                          
