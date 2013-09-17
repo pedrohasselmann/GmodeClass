@@ -28,8 +28,9 @@ class BTree:
    ''' Convert scipy Linkage matrix to Binary Tree for easily cutting nodes'''
    
    def __init__(self, D):
-      self.Y     = self.linkage(D)
-      self.order = self.ordering(self.Y)
+      self.Y  = self.linkage(D)
+      self.tree  = self.ordering_by_root()
+      self.order = self.ordering_by_size()
       #print(self.Y)
 
    def linkage(self, D):
@@ -44,9 +45,10 @@ class BTree:
    
       return Y
    
-   def ordering(self, Y):      
+   def ordering_by_size(self):      
       ''' Dictionary of nodes by order'''
 
+      Y = self.Y
       sizes = iter(sorted(set(Y[:, -2])))
       order = dict()
       # Pairs' nodes:
@@ -66,30 +68,64 @@ class BTree:
             break
    
       return order
-    
-   def cutting(self, branches):
-      ''' Cutting the nodes by order and reaping its leaves'''
+   
+   def ordering_by_root(self):
+      ''' Get all leaves over a group of nodes.
+          Nodes are dictionaries inside lists.'''
 
       Y = self.Y
       N = Y.shape[0]
+      opp = {1:0,0:1}
+      n = 0
+      
+      def get_sequence(node, bseq, order):
+         ''' Recursively kernel.'''
+         # b = {a:[{c:[]},{d:[]}], b:[{e:[]},{f:[]}]}
+         
+         if node > N:
+           n += 1
+           index = node - N -1
+           
+           order[n] = deque()
+           bseq[Y[index][-1]] = deque()
+
+           for branch in [0,1]:
+              if Y[index][branch] > N:
+                bseq[Y[index][-1]].append({Y[index][branch]:None})
+                order[n].append(Y[index][branch])
+              
+                get_sequence(Y[index][branch], bseq[Y[index][-1]][branch], order)
+
+              if Y[index][branch] < N:
+                bseq[Y[index][-1]].append(Y[index][branch])
+       
+      tree = {}
+      order = {0: Y[-1][-1]}
+      get_sequence(Y[-1][-1], tree, order)
+      return tree
+             
+   def cutting(self, branches):
+      ''' Get all leaves over a group of nodes.'''
+
+      Y = self.Y
+      N = Y.shape[0]
+      opp = {1:0,0:1}
       
       def get_leaves(node, leaves):
-         ''' Recursively get all leaves below a certain cut'''
+         ''' Recursively kernel.'''
       
          if node > N:
            index = node - N -1
-         else:
-           leaves.append(int(node))
-           return
     
-         opp = {1:0,0:1}
-         for branch in [0,1]:
-           if Y[index][branch] > N:
-             get_leaves(Y[index][branch], leaves)
+           for branch in [0,1]:
+              if Y[index][branch] > N:
+                get_leaves(Y[index][branch], leaves)
 
-           if Y[index][branch] < N:
-             leaves.append(int(Y[index][branch]))
-             get_leaves(Y[index][opp[branch]], leaves)   
+              if Y[index][branch] < N:
+                leaves.append(int(Y[index][branch]))
+                #get_leaves(Y[index][opp[branch]], leaves)   
+      
+      ##################################################
       
       leaves = dict()
 
@@ -112,12 +148,6 @@ class BTree:
       
       [plt.errorbar(x, y[0], yerr=y[1], color='k', fmt='o-') for y in izip(Y,e)]
       plt.show()
-
-   def cutting_over(self, n):
-      ''' '''
-      pass
-         
-      #branches = sum([self.order[i] for i in xrange(0,n)], [])
       
      
 if __name__ == "__main__":
@@ -125,9 +155,4 @@ if __name__ == "__main__":
   from file_module import unpickle
   test = "q1.2_u0.7_m0.3_MOC3qnum"
   bt = BTree(unpickle(test,"D2"))
-  #groups = bt.cutting(bt.order[15])
-  #print(groups.keys())
-  #print(groups.values())
-  bt.cutting_over(15)
-  #bt.plot(groups[266.0], unpickle(test,"cluster_stats"))
               
