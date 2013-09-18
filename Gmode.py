@@ -182,7 +182,7 @@ class Gmode:
 
          #################################################   
          
-         elems, design, indexs, excluded = list(), list(), list(), list()
+         elems, design, indexs, excluded, failed_seed = list(), list(), list(), deque(), deque()
          
          design.extend(self.design)
          elems.extend(self.elems)
@@ -203,7 +203,8 @@ class Gmode:
          
          mlim = (mlim**2) * Se
 
-         #print(sqrt(mlim))
+         print('mlim: ',sqrt(diagonal(mlim)))
+         print('Se: ',sqrt(diagonal(Se)))
          #print(ctt, devt)
 
          ################# START REPORT #################
@@ -227,17 +228,16 @@ class Gmode:
                
          Nc = 0
          while Nc == 0 or N >= (M - 1):
-
+               Nc+=1
+               report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
                cluster, seed, report = classifying(q1, ulim, mlim, grid, design, array(elems), devt, Rt, report)
 
                Na = len(cluster)
 
                if Na > 3 and Na > 30/free(Rt):
-                        report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
-                        Nc+=1
                          
-                        #print("Barycenter size: ",len(seed))
-                        #print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
+                        print("Barycenter size: ",len(seed))
+                        print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
                            
                         # Save cluster member indexes
                         cluster_members.append(map(lambda i: indexs[i], cluster))
@@ -267,6 +267,7 @@ class Gmode:
                         clusters_report.append(str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
      
                else:
+                        Nc-=1
                         # Exclude clump members from the sample:
                         if len(seed) > 0 and Na > 0: # Has initial seed and members.
                            report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], cluster)))
@@ -278,7 +279,7 @@ class Gmode:
                         elif len(seed) > 0 and Na == 0: # Has initial seed but no members.
                            report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], seed)))
                                         
-                           excluded.extend(map(lambda i: indexs[i], seed))                         
+                           failed_seed.extend(map(lambda i: indexs[i], seed))                         
                            
                            for i in seed:  elems[i], design[i], indexs[i] = None, None, None
 
@@ -294,18 +295,21 @@ class Gmode:
 
          report.append("######################### Excluded ###############################")
          report.append("Excluded Sample Size: "+str(len(excluded)))
+         report.append("Failed Seeds: "+str(len(failed_seed)))
          print("Number of Clusters: ", len(cluster_stats))
          print("Excluded Sample Size: ",len(excluded))
-         
+         print("Failed Seeds: ",len(failed_seed))
+     
          # Setting in self
          self.t0              = t0
          # logs
          self.report          = report
-         self.clusters_report  = clusters_report
+         self.clusters_report = clusters_report
          # python objects
          self.cluster_members = cluster_members
          self.cluster_stats   = cluster_stats
          self.excluded        = excluded
+         self.failed_seed     = failed_seed
          
          # Robustness        
          self.robustness()
@@ -336,7 +340,7 @@ class Gmode:
 
             j = 0
             for i in range(len(elems[0])):
-                self.report.append('\nMatrix Gc for variable '+str(i+1)+10*" "+' Weight: '+str(d2[i].sum()/d2.sum())+'\n') #+pretty_print(Gc[i]))
+                self.report.append('\nMatrix Gc for variable '+str(i+1)+10*" "+' Weight: '+str(d2[i].sum()/d2.sum())) #+pretty_print(Gc[i]))
                 
 
                 if all(Gc[i] < q2):
@@ -466,10 +470,10 @@ class Gmode:
          from plot_module import plot_spectral, mosaic
          from matplotlib.pyplot import close
          
-         #for n, cl in enumerate(self.cluster_members):
-         #    elems_group = array(map(lambda j: self.elems[j], cl))
+         for n, cl in enumerate(self.cluster_members):
+             elems_group = array(map(lambda j: self.elems[j], cl))
              
-         #    plot_spectral(n+1, self.cluster_stats[n], elems_group, self.label)
+             plot_spectral(n+1, self.cluster_stats[n], elems_group, self.label)
          
          mosaic(self.cluster_members, self.elems, self.label)
          close("all")
@@ -497,7 +501,7 @@ class Gmode:
          self.report.append('total processing time: '+str(t)+' min')
          print('total processing time: '+str(t)+' min')
 
-# END of the method
+# END
 
 if __name__ == '__main__':
    gmode  = Gmode()

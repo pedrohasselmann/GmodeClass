@@ -29,8 +29,8 @@ class BTree:
    
    def __init__(self, D):
       self.Y  = self.linkage(D)
-      self.tree  = self.ordering_by_root()
-      self.order = self.ordering_by_size()
+      self.tree, self.height  = self.tree()
+      #self.order = self.ordering_by_size()
       #print(self.Y)
 
    def linkage(self, D):
@@ -44,7 +44,41 @@ class BTree:
       Y = concatenate((Y, arange(N,2*N-1).reshape((Y.shape[0], 1))), 1)
    
       return Y
-   
+
+   def tree(self):
+      ''' Get all leaves over a group of nodes.
+          Nodes are dictionaries inside lists.'''
+
+      Y = self.Y
+      N = Y.shape[0]
+      
+      def get_sequence(node, bseq, height, n=0):
+         ''' Recursively kernel.'''
+         # b = {a:[{c:[]},{d:[]}], b:[{e:[]},{f:[]}]}
+         
+         if node > N:
+           n += 1
+           index = node - N -1
+           
+           if n not in height: height[n]  = deque()
+           bseq[Y[index][-1]] = deque()
+
+           for branch in [0,1]:
+              if Y[index][branch] > N:
+                bseq[Y[index][-1]].append({Y[index][branch]:None})
+                height[n].append(Y[index][branch])
+              
+                get_sequence(Y[index][branch], bseq[Y[index][-1]][branch], height, n)
+
+              if Y[index][branch] < N:
+                bseq[Y[index][-1]].append(Y[index][branch])
+                n -= 1
+       
+      t = {}
+      h = {0: Y[-1][-1]}
+      get_sequence(Y[-1][-1], t, h)
+      return t, h
+
    def ordering_by_size(self):      
       ''' Dictionary of nodes by order'''
 
@@ -68,48 +102,13 @@ class BTree:
             break
    
       return order
-   
-   def ordering_by_root(self):
-      ''' Get all leaves over a group of nodes.
-          Nodes are dictionaries inside lists.'''
-
-      Y = self.Y
-      N = Y.shape[0]
-      opp = {1:0,0:1}
-      n = 0
-      
-      def get_sequence(node, bseq, order):
-         ''' Recursively kernel.'''
-         # b = {a:[{c:[]},{d:[]}], b:[{e:[]},{f:[]}]}
-         
-         if node > N:
-           n += 1
-           index = node - N -1
-           
-           order[n] = deque()
-           bseq[Y[index][-1]] = deque()
-
-           for branch in [0,1]:
-              if Y[index][branch] > N:
-                bseq[Y[index][-1]].append({Y[index][branch]:None})
-                order[n].append(Y[index][branch])
-              
-                get_sequence(Y[index][branch], bseq[Y[index][-1]][branch], order)
-
-              if Y[index][branch] < N:
-                bseq[Y[index][-1]].append(Y[index][branch])
-       
-      tree = {}
-      order = {0: Y[-1][-1]}
-      get_sequence(Y[-1][-1], tree, order)
-      return tree
              
    def cutting(self, branches):
       ''' Get all leaves over a group of nodes.'''
 
       Y = self.Y
       N = Y.shape[0]
-      opp = {1:0,0:1}
+      #opp = {1:0,0:1}
       
       def get_leaves(node, leaves):
          ''' Recursively kernel.'''

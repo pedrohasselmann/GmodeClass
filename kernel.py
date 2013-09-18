@@ -18,7 +18,7 @@ from numpy import round as arround
   
 ############ Neighboring Central Method: Recognition of Classes and Classification ###########
  
-def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
+def classifying(q1, ulim, mlim, grid, design, data, devt, Rt, report):
     ''' Iterative procedure of sample clustering'''
 
     N = data.shape[0]    # Sample Size
@@ -28,7 +28,7 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
     data = data/devt
 
 #________________________________Barycenter______________________________________
-    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), minlim)
+    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), sqrt(mlim))
     #seed = barycenter_hist(grid, design, data)
     
     if len(seed) > 2:
@@ -59,9 +59,9 @@ def classifying(q1, ulim, minlim, grid, design, data, devt, Rt, report):
 
           if i == 0:
              for n, d in enumerate(stdc): 
-                 if d < sqrt(minlim[n,n]):
-                    Sc[n,n] = minlim[n,n]
-                    stdc[n] = sqrt(minlim[n,n])
+                 if d < sqrt(mlim[n,n]):
+                    Sc[n,n] = mlim[n,n]
+                    stdc[n] = sqrt(mlim[n,n])
 
 # Once upper limit is reached the iteration is haulted.
           if ulim < 1e0 and aany(stdc >= ulim):
