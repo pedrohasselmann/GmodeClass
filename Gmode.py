@@ -160,7 +160,7 @@ class Gmode:
 
      def run(self, realtime_map='n', save='y', **arg):
 
-         from kernel import classifying
+         from kernel import clustering
          from plot_module import plot_map
          from gmode_module import stats, shortcut, cov, free
 
@@ -203,12 +203,10 @@ class Gmode:
          
          mlim = (mlim**2) * Se
 
+         ################# START REPORT #################
+         print(q1, ulim, 30/free(Rt))
          print('mlim: ',sqrt(diagonal(mlim)))
          print('Se: ',sqrt(diagonal(Se)))
-         #print(ctt, devt)
-
-         ################# START REPORT #################
-         print(q1, ulim)
          clusters_report =["Clump   N                median                      st. dev."]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
          report.append(" S.D.: "+str(devt))
@@ -230,14 +228,14 @@ class Gmode:
          while Nc == 0 or N >= (M - 1):
                Nc+=1
                report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
-               cluster, seed, report = classifying(q1, ulim, mlim, grid, design, array(elems), devt, Rt, report)
+               cluster, seed, report = clustering(q1, ulim, mlim, grid, array(design), array(elems), devt, Rt, report)
 
                Na = len(cluster)
 
-               if Na > 3 and Na > 30/free(Rt):
+               if Na > 3:
                          
-                        print("Barycenter size: ",len(seed))
-                        print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
+                        #print("Barycenter size: ",len(seed))
+                        #print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
                            
                         # Save cluster member indexes
                         cluster_members.append(map(lambda i: indexs[i], cluster))
@@ -317,7 +315,7 @@ class Gmode:
          report.append("Robustness: "+str(self.robust))
          
 
-     ################### Evaluate Variables and discriminate it #####################
+     ################### Evaluate Variables and discriminate them #####################
 
      def evaluate(self, q2=None):
 
@@ -325,7 +323,7 @@ class Gmode:
 
          if len(self.cluster_members) > 1:
 
-            from eval_variables import verifying
+            from eval_variables import distance
             from gmode_module import stats
             from file_module import pickle
 
@@ -336,7 +334,7 @@ class Gmode:
 
             self.report.append("Confidence level q2: "+str(normal.cdf(q2) - normal.cdf(-q2)))
 
-            d2, Gc, D2 = verifying(q2, self.cluster_members, self.cluster_stats, array(elems)/(stats(elems)[1])) 
+            d2, Gc, D2 = distance(self.cluster_members, self.cluster_stats, array(elems)/(stats(elems)[1])) 
 
             j = 0
             for i in range(len(elems[0])):

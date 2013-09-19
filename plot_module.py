@@ -49,7 +49,7 @@ def pairwise(iterable):
 
 def plot_distribution(data,*zones):
 
-    plt.figure(figsize=(6,9),dpi=80)
+    plt.figure(figsize=(6,9),dpi=60)
     data = array(data)
     Na = data.shape[1]
     

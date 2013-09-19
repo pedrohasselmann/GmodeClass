@@ -10,7 +10,7 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 
 import warnings
 from numpy import array, sqrt, eye, matrix, dot, \
-diagonal, diagflat, median, fabs, corrcoef, isnan, ravel
+diagonal, diagflat, median, fabs, corrcoef, isnan, ravel, vectorize
 
 from numpy import all as aall
 from numpy import sum as asum
@@ -119,6 +119,7 @@ def G(N, f, X, ct, iS):
 #
 
 def hyp_test(N, q1, f, key, x, ct, iS):
+    ''' G hypothesis testing'''
     if aall(G(N, f, x, ct, iS) <= q1):
        #print(G(N, f, x, ct, iS))
        return key

@@ -10,16 +10,27 @@ from gmode_module import stats, hyp_test, Invert, free
 from barycenter import barycenter_hist, barycenter_density
 from file_module import l_to_s
 from itertools import imap
-from numpy import sqrt, amax, amin, eye
-from numpy import any as aany
+from numpy import sqrt, amax, amin, eye, diagonal, ndenumerate, any, all
 from numpy import sum as asum
 from numpy import round as arround
 #from plot_module import plot_clump
-  
+
+# Much faster look up than with lists, for larger lists
+
+def filtering(X, criteria):
+   @vectorize
+   def verify(elem): return elem not in criteria
+   return X[verify(X[:])]
+
+def select(X, crt):
+   @vectorize
+   def verify(elem): return elem in criteria
+   return X[verify(X[:])]
+   
 ############ Neighboring Central Method: Recognition of Classes and Classification ###########
  
-def classifying(q1, ulim, mlim, grid, design, data, devt, Rt, report):
-    ''' Iterative procedure of sample clustering'''
+def clustering(q1, ulim, mlim, grid, design, data, devt, Rt, report):
+    ''' Iterative procedure of clustering'''
 
     N = data.shape[0]    # Sample Size
     M = data.shape[1]    # Variable size
@@ -32,7 +43,7 @@ def classifying(q1, ulim, mlim, grid, design, data, devt, Rt, report):
     #seed = barycenter_hist(grid, design, data)
     
     if len(seed) > 2:
-       report.append("Barycenter: "+l_to_s(map(lambda j: design[j], seed)))
+       report.append("Barycenter: "+l_to_s(design[seed])) # map(lambda j: design[j], seed)))
        #print("Barycenter: "+l_to_s(map(lambda j: design[j], seed)))
        Na = len(seed)
        cluster = list(seed)
@@ -43,6 +54,7 @@ def classifying(q1, ulim, mlim, grid, design, data, devt, Rt, report):
 
     i = 0
     Rc, Na_prior, Na_prior02  = eye(M), Na, Na
+    index = range(N)
 
     while (i == 0 or (round(asum(Rc),6) != round(asum(R_prior),6) and Na != Na_prior and Na != Na_prior02)) and i < 40 and Na > 2:
 
@@ -57,14 +69,13 @@ def classifying(q1, ulim, mlim, grid, design, data, devt, Rt, report):
           
 # Replace lower deviations than minimal limit:
 
-          if i == 0:
-             for n, d in enumerate(stdc): 
-                 if d < sqrt(mlim[n,n]):
-                    Sc[n,n] = mlim[n,n]
-                    stdc[n] = sqrt(mlim[n,n])
+          if i == 0 and all(Sc < mlim):
+             Sc = mlim
+                    
+             stdc = sqrt(diagonal(Sc))
 
 # Once upper limit is reached the iteration is haulted.
-          if ulim < 1e0 and aany(stdc >= ulim):
+          if ulim < 1e0 and any(stdc >= ulim):
              #print(Na, seed, stdc)
              return cluster, seed, report
 
@@ -74,9 +85,9 @@ def classifying(q1, ulim, mlim, grid, design, data, devt, Rt, report):
           f = free(Rc)
           #Rg = f/M
 
-          if Na*f > 30:
+          if Na*f >= 30:
              cluster = filter(lambda x: x != None, \
-                       imap(lambda ind, y: hyp_test(Na,q1,f,ind,y,ctc,iSc), range(N), data))
+                              imap(lambda ind, y: hyp_test(Na,q1,f,ind,y,ctc,iSc), index, data))
           
           else:
              return cluster, seed, report

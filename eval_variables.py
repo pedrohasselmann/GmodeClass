@@ -9,17 +9,18 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 
 #__________________Part 2: Verifying the variables significance_________________________
 
-def verifying(q2, all_clusters, cluster_stats, elems):
+def distance(all_clusters, cluster_stats, elems):
 
-  Nc = len(all_clusters)   # Cluster Number
-  N  = len(elems)
-  M  = len(elems[0])     # Variable number
+  Nc = len(all_clusters) # Cluster size
+  N  = len(elems)        # Sample Size
+  M  = len(elems[0])     # Variable size
 
   TINY = 1e-9
 
 # Modules:
-  from numpy import zeros, array, float32, sqrt, dot, ravel
+  from numpy import zeros, array, float32, sqrt, dot, ravel, vectorize
   from numpy import sum as asum
+  from collections import deque
   from gmode_module import stats, Invert
 
 
@@ -29,7 +30,7 @@ def verifying(q2, all_clusters, cluster_stats, elems):
   D2 = zeros((Nc,Nc),   dtype=float32)
 
 # Hash elements of each cluster in a array:
-  elems_cluster = list()
+  elems_cluster = deque()
   for a in xrange(Nc): elems_cluster.append(elems[all_clusters[a]])
   elems_cluster = array(elems_cluster)
 
@@ -42,7 +43,8 @@ def verifying(q2, all_clusters, cluster_stats, elems):
       # Statistics of cluster a:
       ct_a, dev_a, S_a, R_a = cluster_stats[a]
       
-      iR_a = Invert(R_a)
+      #iR_a = Invert(R_a)
+      iS_a = Invert(S_a)
 
       for b in xrange(a+1,Nc):
 
@@ -51,22 +53,25 @@ def verifying(q2, all_clusters, cluster_stats, elems):
           # Statistics of cluster b:
           ct_b, dev_b, S_b, R_b = cluster_stats[b]
 
-          iR_b = Invert(R_b)          
+          #iR_b = Invert(R_b) 
+          iS_b = Invert(S_b)
 
           # Degrees of freedom:
           fab = (Nb - 1e0)*(M**2)/asum(R_a)
           fba = (Na - 1e0)*(M**2)/asum(R_b)
           
           # Calculating Z²i(a,b) e Z²i(b,a):
-          Z2iab = asum( ( (elems_cluster[b] - ct_a)/(dev_a + TINY) )**2, axis=0 )
-          #Z2iab = asum( (elems_cluster[b] - ct_a) * ravel( dot(iS_a , (elems_cluster[b] - ct_a).T) ), axis=0 )
-          Z2iba = asum( ( (elems_cluster[a] - ct_b)/(dev_b + TINY) )**2, axis=0 )
-          #Z2iba = asum( (elems_cluster[a] - ct_b) * ravel( dot(iS_b , (elems_cluster[a] - ct_b).T) ), axis=0 )
+          #Z2iab = asum( ( (elems_cluster[b] - ct_a)/(dev_a + TINY) )**2, axis=0 )
+          Z2iab = asum( (elems_cluster[b] - ct_a) * ravel( dot(iS_a , (elems_cluster[b] - ct_a).T) ), axis=0 )
+          #Z2iba = asum( ( (elems_cluster[a] - ct_b)/(dev_b + TINY) )**2, axis=0 )
+          Z2ba = asum( (elems_cluster[a] - ct_b) * ravel( dot(iS_b , (elems_cluster[a] - ct_b).T) ), axis=0 )
 
           # Calculating Z²(a,b) e Z2(b,a):
 
-          Z2ab = asum( dot(iR_a, Z2iab) )
-          Z2ba = asum( dot(iR_b, Z2iba) )
+          #Z2ab = asum( dot(iR_a, Z2iab) )
+          #Z2ba = asum( dot(iR_b, Z2iba) )
+          Z2ab = asum(Z2iab)
+          Z2ba = asum(Z2iba) 
 
 
           for i in xrange(M):
