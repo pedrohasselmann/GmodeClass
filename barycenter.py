@@ -80,7 +80,7 @@ def barycenter_KNN(data, index, label):
 # and find the most popular one and his friends to be the seed.
 #
 
-def barycenter_hist(grid, design, data): 
+def barycenter_hist(grid, design, data, minsize=5): 
 
     upper = amax(data, axis=0)
     lower = amin(data, axis=0)
@@ -92,7 +92,7 @@ def barycenter_hist(grid, design, data):
 
     ind = unravel_index(argmax(hist), hist.shape)
 
-    if amax(hist) > 5:
+    if amax(hist) > minsize:
        del hist
        limits = array([list(pairwise(edges[i])) for i in rng])  
 

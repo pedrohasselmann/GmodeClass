@@ -15,7 +15,7 @@ from time import time
 from support import make_dir
 from scipy.stats import norm as normal
 from collections import deque
-from numpy import array, sum, sqrt, diagonal, zeros, genfromtxt, float64, all
+from numpy import median, array, sum, sqrt, diagonal, zeros, genfromtxt, float64, all, copy, delete
 from file_module import l_to_s, pretty_print
 
 pathjoin = path.join
@@ -44,6 +44,7 @@ class Gmode:
      ulim : Float between 0.0 and 1.0. Upper Std. Deviation Limit.
      mlim : Float between 0.0 and 1.0. Minimum Std. Deviation Limit.
      grid : Integer. Number of folds in barycenter_density search.
+     name : Test label.
      
      Input Format
      -----------
@@ -144,11 +145,11 @@ class Gmode:
 
          data = map(list,genfromtxt(filename, dtype=None))
 
-         self.design   = map(itemgetter(0),data)
-         self.uniq_id  = map(itemgetter(1),data)
+         self.design   = array(map(itemgetter(0),data))
+         self.uniq_id  = array(map(itemgetter(1),data))
 
-         self.elems  = [array(item[2::2], dtype=float64) for item in data]
-         self.errs   = [array(item[3::2], dtype=float64) for item in data]
+         self.elems  = array([array(item[2::2], dtype=float64) for item in data])
+         self.errs   = array([array(item[3::2], dtype=float64) for item in data])
 
          #self.elems  = [array(item[2:6], dtype=float64) for item in data]
          #self.errs   = [array(item[6:], dtype=float64) for item in data]
@@ -182,12 +183,12 @@ class Gmode:
 
          #################################################   
          
-         elems, design, indexs, excluded, failed_seed = list(), list(), list(), deque(), deque()
+         excluded, failed_seed = deque(), deque()
          
-         design.extend(self.design)
-         elems.extend(self.elems)
+         design = copy(self.design)
+         elems  = copy(self.elems)
          #errs.extend(self.errs)
-         indexs.extend(self.indexs)
+         indexs = copy(self.indexs)
 
          t0 = time() # Start counting procedure time
 
@@ -204,7 +205,7 @@ class Gmode:
          mlim = (mlim**2) * Se
 
          ################# START REPORT #################
-         print(q1, ulim, 30/free(Rt))
+         print(q1, ulim) #30/free(Rt))
          print('mlim: ',sqrt(diagonal(mlim)))
          print('Se: ',sqrt(diagonal(Se)))
          clusters_report =["Clump   N                median                      st. dev."]
@@ -214,7 +215,9 @@ class Gmode:
          report.append(" Minimum Deviation: "+str(mlim))
          report.append(" Confidence level q1: "+str(normal.cdf(q1) - normal.cdf(-q1)))
          report.append('grid: '+str(grid)+" --> "+str(grid**(M)))
-         
+
+         excluded          = deque()
+         failed_seed       = deque()
          cluster_members   = deque()
          cluster_stats     = deque()
 
@@ -228,20 +231,20 @@ class Gmode:
          while Nc == 0 or N >= (M - 1):
                Nc+=1
                report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
-               cluster, seed, report = clustering(q1, ulim, mlim, grid, array(design), array(elems), devt, Rt, report)
+               cluster, seed, report = clustering(q1, ulim, mlim, grid, design, elems, devt, Rt, report)
 
                Na = len(cluster)
 
-               if Na > 3:
+               if Na > 3 and (Na > 30/free(Rt) or Na > len(seed)):
                          
-                        #print("Barycenter size: ",len(seed))
-                        #print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
+                        print("Barycenter size: ",len(seed))
+                        print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
                            
                         # Save cluster member indexes
-                        cluster_members.append(map(lambda i: indexs[i], cluster))
+                        cluster_members.append(indexs[cluster]) #(map(lambda i: indexs[i], cluster))
 
                         # save cluster statistics
-                        cluster_stats.append(shortcut(cluster, elems))
+                        cluster_stats.append(stats(elems[cluster])) #(shortcut(cluster, elems))
 
                         if realtime_map == 'y':
                            try:
@@ -250,13 +253,15 @@ class Gmode:
                               pass
                         
                         # Exclude group members from the sample:
-                        for i in cluster:  elems[i], design[i], indexs[i] = None, None, None
-                        elems  = filter(lambda x: x!=None, elems)
-                        design = filter(lambda x: x!=None, design)
-                        indexs = filter(lambda x: x!=None, indexs)
-                        N = len(indexs)
-  
-                        #report.append("Statistical Significance")
+                        #for i in cluster:  elems[i], design[i], indexs[i] = None, None, None
+                        #elems  = filter(lambda x: x!=None, elems)
+                        #design = filter(lambda x: x!=None, design)
+                        #indexs = filter(lambda x: x!=None, indexs)
+                        elems  = delete(elems, cluster, 0)
+                        design = delete(design, cluster, 0)
+                        indexs = delete(indexs, cluster, 0)
+ 
+                        # appending into logs
                         report.append("\nC.T.: "+l_to_s(cluster_stats[-1][0])+"\nS.D.: "+l_to_s(cluster_stats[-1][1])+ \
                                         "\nSize: "+str(Na)+"       Left: "+str(N)+"\n")
                         
@@ -268,26 +273,29 @@ class Gmode:
                         Nc-=1
                         # Exclude clump members from the sample:
                         if len(seed) > 0 and Na > 0: # Has initial seed and members.
-                           report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], cluster)))
+                           report.append("Failed Clump: "+l_to_s(design[cluster]))#map(lambda i: design[i], cluster)))
                                         
-                           excluded.extend(map(lambda i: indexs[i], cluster))                         
+                           excluded.extend(indexs[cluster]) #map(lambda i: indexs[i], cluster))                         
                            
-                           for i in cluster:  elems[i], design[i], indexs[i] = None, None, None
+                           #for i in cluster:  elems[i], design[i], indexs[i] = None, None, None
+                           elems  = delete(elems, cluster, 0)
+                           design = delete(design, cluster, 0)
+                           indexs = delete(indexs, cluster, 0)
 
                         elif len(seed) > 0 and Na == 0: # Has initial seed but no members.
-                           report.append("Failed Clump: "+l_to_s(map(lambda i: design[i], seed)))
+                           report.append("Failed Clump: "+l_to_s(design[cluster]))
                                         
-                           failed_seed.extend(map(lambda i: indexs[i], seed))                         
+                           failed_seed.extend(set(indexs[cluster]))                        
                            
-                           for i in seed:  elems[i], design[i], indexs[i] = None, None, None
+                           #for i in seed:  elems[i], design[i], indexs[i] = None, None, None
+                           elems  = delete(elems, seed, 0)
+                           design = delete(design, seed, 0)
+                           indexs = delete(indexs, seed, 0)
 
-                        elif len(seed) == 0: # Does not have initial seed.
+                        elif len(seed) == 0: # It does not have initial seed.
                            break
 
-                        elems  = filter(lambda x: x!=None, elems)
-                        design = filter(lambda x: x!=None, design)
-                        indexs = filter(lambda x: x!=None, indexs)
-                        N = len(indexs)
+               N = len(indexs)
 
          excluded.extend(indexs)
 
@@ -324,17 +332,18 @@ class Gmode:
          if len(self.cluster_members) > 1:
 
             from eval_variables import distance
-            from gmode_module import stats
+            from gmode_module import mad
             from file_module import pickle
 
-            elems      = self.elems
+            elems      = copy(self.elems)
+            dev        = mad(elems, median(elems, axis=0))
             #errs      = self.errs
 
             self.report.append('\n############################## Part II : Verifying the variable significance ###############################\n')
 
             self.report.append("Confidence level q2: "+str(normal.cdf(q2) - normal.cdf(-q2)))
 
-            d2, Gc, D2 = distance(self.cluster_members, self.cluster_stats, array(elems)/(stats(elems)[1])) 
+            d2, Gc, D2 = distance(self.cluster_members, self.cluster_stats, elems/dev) 
 
             j = 0
             for i in range(len(elems[0])):

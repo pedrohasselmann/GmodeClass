@@ -181,6 +181,17 @@ def collapse_classification(clusters, ID):
     
     return cat
 
+# Much faster look up than with lists, for larger lists
+
+def filtering(X, criteria):
+    @vectorize
+    def verify(elem): return elem not in criteria
+    return X[verify(X[:])]
+
+def select(X, crt):
+    @vectorize
+    def verify(elem): return elem in criteria
+    return X[verify(X[:])]
 
 
             

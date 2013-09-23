@@ -18,7 +18,7 @@ def distance(all_clusters, cluster_stats, elems):
   TINY = 1e-9
 
 # Modules:
-  from numpy import zeros, array, float32, sqrt, dot, ravel, vectorize
+  from numpy import zeros, array, float32, sqrt, dot, ravel, vectorize, fabs
   from numpy import sum as asum
   from collections import deque
   from gmode_module import stats, Invert
@@ -62,9 +62,9 @@ def distance(all_clusters, cluster_stats, elems):
           
           # Calculating Z²i(a,b) e Z²i(b,a):
           #Z2iab = asum( ( (elems_cluster[b] - ct_a)/(dev_a + TINY) )**2, axis=0 )
-          Z2iab = asum( (elems_cluster[b] - ct_a) * ravel( dot(iS_a , (elems_cluster[b] - ct_a).T) ), axis=0 )
+          Z2iab = asum( fabs( (elems_cluster[b] - ct_a) * dot(iS_a , (elems_cluster[b] - ct_a) )), axis=0 )
           #Z2iba = asum( ( (elems_cluster[a] - ct_b)/(dev_b + TINY) )**2, axis=0 )
-          Z2ba = asum( (elems_cluster[a] - ct_b) * ravel( dot(iS_b , (elems_cluster[a] - ct_b).T) ), axis=0 )
+          Z2iba = asum( fabs( (elems_cluster[a] - ct_b) * dot(iS_b , (elems_cluster[a] - ct_b) )), axis=0 )
 
           # Calculating Z²(a,b) e Z2(b,a):
 

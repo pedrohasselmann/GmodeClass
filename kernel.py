@@ -14,18 +14,6 @@ from numpy import sqrt, amax, amin, eye, diagonal, ndenumerate, any, all
 from numpy import sum as asum
 from numpy import round as arround
 #from plot_module import plot_clump
-
-# Much faster look up than with lists, for larger lists
-
-def filtering(X, criteria):
-   @vectorize
-   def verify(elem): return elem not in criteria
-   return X[verify(X[:])]
-
-def select(X, crt):
-   @vectorize
-   def verify(elem): return elem in criteria
-   return X[verify(X[:])]
    
 ############ Neighboring Central Method: Recognition of Classes and Classification ###########
  
@@ -70,8 +58,7 @@ def clustering(q1, ulim, mlim, grid, design, data, devt, Rt, report):
 # Replace lower deviations than minimal limit:
 
           if i == 0 and all(Sc < mlim):
-             Sc = mlim
-                    
+             Sc = mlim                    
              stdc = sqrt(diagonal(Sc))
 
 # Once upper limit is reached the iteration is haulted.
