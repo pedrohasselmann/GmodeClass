@@ -183,8 +183,6 @@ class Gmode:
 
          #################################################   
          
-         excluded, failed_seed = deque(), deque()
-         
          design = copy(self.design)
          elems  = copy(self.elems)
          #errs.extend(self.errs)
@@ -194,8 +192,6 @@ class Gmode:
 
          N=len(elems)    # Sample size
          M=len(elems[0]) # Variable size
-         
-         #print('grid: ',grid,"--> ", grid**(M))
 
          ##################################################
          
@@ -237,9 +233,8 @@ class Gmode:
 
                if Na > 3 and (Na > 30/free(Rt) or Na > len(seed)):
                          
-                        print("Barycenter size: ",len(seed))
-                        print(' N = ',N,'Nc = ',Nc,'Na = ',Na)
-                           
+                        print(Nc, "Seed size: ",len(seed),' N = ',N,'Na = ',Na)
+                        #press = raw_input("press enter") 
                         # Save cluster member indexes
                         cluster_members.append(indexs[cluster]) #(map(lambda i: indexs[i], cluster))
 
@@ -272,7 +267,7 @@ class Gmode:
                else:
                         Nc-=1
                         # Exclude clump members from the sample:
-                        if len(seed) > 0 and Na > 0: # Has initial seed and members.
+                        if len(seed) > 2 and Na > 0: # Has initial seed and members.
                            report.append("Failed Clump: "+l_to_s(design[cluster]))#map(lambda i: design[i], cluster)))
                                         
                            excluded.extend(indexs[cluster]) #map(lambda i: indexs[i], cluster))                         
@@ -282,7 +277,7 @@ class Gmode:
                            design = delete(design, cluster, 0)
                            indexs = delete(indexs, cluster, 0)
 
-                        elif len(seed) > 0 and Na == 0: # Has initial seed but no members.
+                        elif len(seed) > 2 and Na == 0: # Has initial seed but no members.
                            report.append("Failed Clump: "+l_to_s(design[cluster]))
                                         
                            failed_seed.extend(set(indexs[cluster]))                        
@@ -292,7 +287,7 @@ class Gmode:
                            design = delete(design, seed, 0)
                            indexs = delete(indexs, seed, 0)
 
-                        elif len(seed) == 0: # It does not have initial seed.
+                        elif len(seed) < 3: # It does not have initial seed.
                            break
 
                N = len(indexs)

@@ -62,9 +62,9 @@ def distance(all_clusters, cluster_stats, elems):
           
           # Calculating Z²i(a,b) e Z²i(b,a):
           #Z2iab = asum( ( (elems_cluster[b] - ct_a)/(dev_a + TINY) )**2, axis=0 )
-          Z2iab = asum( fabs( (elems_cluster[b] - ct_a) * dot(iS_a , (elems_cluster[b] - ct_a) )), axis=0 )
+          Z2iab = asum( fabs( (elems_cluster[b] - ct_a).T * dot(iS_a , (elems_cluster[b] - ct_a).T )), axis=0 )
           #Z2iba = asum( ( (elems_cluster[a] - ct_b)/(dev_b + TINY) )**2, axis=0 )
-          Z2iba = asum( fabs( (elems_cluster[a] - ct_b) * dot(iS_b , (elems_cluster[a] - ct_b) )), axis=0 )
+          Z2iba = asum( fabs( (elems_cluster[a] - ct_b).T * dot(iS_b , (elems_cluster[a] - ct_b).T )), axis=0 )
 
           # Calculating Z²(a,b) e Z2(b,a):
 

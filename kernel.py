@@ -10,7 +10,7 @@ from gmode_module import stats, hyp_test, Invert, free
 from barycenter import barycenter_hist, barycenter_density
 from file_module import l_to_s
 from itertools import imap
-from numpy import sqrt, amax, amin, eye, diagonal, ndenumerate, any, all
+from numpy import sqrt, amax, amin, eye, diagonal, diagflat, ndenumerate, any, all
 from numpy import sum as asum
 from numpy import round as arround
 #from plot_module import plot_clump
@@ -67,7 +67,7 @@ def clustering(q1, ulim, mlim, grid, design, data, devt, Rt, report):
              return cluster, seed, report
 
 # G hypothesis test:
-
+          #print(i, Na, stdc)
           iSc = Invert(Sc)
           f = free(Rc)
           #Rg = f/M
@@ -77,14 +77,20 @@ def clustering(q1, ulim, mlim, grid, design, data, devt, Rt, report):
                               imap(lambda ind, y: hyp_test(Na,q1,f,ind,y,ctc,iSc), index, data))
           
           else:
+	     #print("out by degree of freedom.")
              return cluster, seed, report
 
           Na = len(cluster)
           
           report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(stdc, 3))+"\nf: "+str(f)+"\n")
-          
-          i += 1
 
+# Discreetly increase std. until the seed start growing by itself.
+          if i == 0 and Na <= Na_prior:
+             Sc = Sc + mlim
+             stdc = sqrt(diagonal(Sc))
+          else:
+             i += 1
+             
     return cluster, seed, report
 
 # End of the Central Method
