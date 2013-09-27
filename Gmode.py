@@ -15,7 +15,7 @@ from time import time
 from support import make_dir
 from scipy.stats import norm as normal
 from collections import deque
-from numpy import median, array, sum, sqrt, diagonal, zeros, genfromtxt, float64, all, copy, delete
+from numpy import median, matrix, array, sum, sqrt, diagflat, diagonal, ones, zeros, genfromtxt, float64, all, copy, delete
 from file_module import l_to_s, pretty_print
 
 pathjoin = path.join
@@ -181,6 +181,7 @@ class Gmode:
 
          if save == 'y': self.load(**arg)
 
+         print(q1, mlim, ulim) #30/free(Rt))
          #################################################   
          
          design = copy(self.design)
@@ -196,14 +197,15 @@ class Gmode:
          ##################################################
          
          ctt, devt, St, Rt = stats(elems)
-         Se = cov(self.errs/devt, zeros(M), 1e0)
+         #Se = cov(self.errs/devt, zeros(M), 1e0)
          
-         mlim = (mlim**2) * Se
+         #mlim = (mlim**2) * Se
+         mlim = matrix(diagflat(mlim*ones(ctt.size)))
 
          ################# START REPORT #################
-         print(q1, ulim) #30/free(Rt))
-         print('mlim: ',sqrt(diagonal(mlim)))
-         print('Se: ',sqrt(diagonal(Se)))
+
+         #print('mlim: ',sqrt(diagonal(mlim)))
+         #print('Se: ',sqrt(diagonal(Se)))
          clusters_report =["Clump   N                median                      st. dev."]
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
          report.append(" S.D.: "+str(devt))
@@ -227,7 +229,7 @@ class Gmode:
          while Nc == 0 or N >= (M - 1):
                Nc+=1
                report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
-               cluster, seed, report = clustering(q1, ulim, mlim, grid, design, elems, devt, Rt, report)
+               cluster, seed, report = clustering(q1, ulim, mlim, grid, design, elems/devt, report)
 
                Na = len(cluster)
 
@@ -268,7 +270,7 @@ class Gmode:
                         Nc-=1
                         # Exclude clump members from the sample:
                         if len(seed) > 2 and Na > 0: # Has initial seed and members.
-                           report.append("Failed Clump: "+l_to_s(design[cluster]))#map(lambda i: design[i], cluster)))
+                           report.append("Failed Clump: "+l_to_s(design[cluster])) #map(lambda i: design[i], cluster)))
                                         
                            excluded.extend(indexs[cluster]) #map(lambda i: indexs[i], cluster))                         
                            

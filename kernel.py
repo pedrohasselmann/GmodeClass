@@ -17,14 +17,11 @@ from numpy import round as arround
    
 ############ Neighboring Central Method: Recognition of Classes and Classification ###########
  
-def clustering(q1, ulim, mlim, grid, design, data, devt, Rt, report):
+def clustering(q1, ulim, mlim, grid, design, data, report):
     ''' Iterative procedure of clustering'''
 
     N = data.shape[0]    # Sample Size
     M = data.shape[1]    # Variable size
-
-#_______________________________Whitenning the sample__________________________
-    data = data/devt
 
 #________________________________Barycenter______________________________________
     seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), sqrt(mlim))
@@ -57,7 +54,7 @@ def clustering(q1, ulim, mlim, grid, design, data, devt, Rt, report):
           
 # Replace lower deviations than minimal limit:
 
-          if i == 0 and all(Sc < mlim):
+          if i == 0 and any(Sc < mlim):
              Sc = mlim                    
              stdc = sqrt(diagonal(Sc))
 
