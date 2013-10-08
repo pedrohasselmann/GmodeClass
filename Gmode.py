@@ -33,8 +33,8 @@ class Gmode:
      G-mode Multivariate Clustering Method
      -------------------------------------
      
-     Developer : Pedro Henrique A Hasselman (Hasselmann et al. 2013)
-     Method Developer : A. I. Gavrishin and A. Coradini (Coradini et al. 1977)
+     Algorithm Developer : Pedro Henrique A Hasselman (Hasselmann et al. 2013)
+     Original Method Developers : A. I. Gavrishin and A. Coradini (Coradini et al. 1977)
      
      WARNING: Minimal dependencies: Numpy 1.5, Scipy 0.9, matplotlib 1.0.1
      
@@ -229,13 +229,12 @@ class Gmode:
          while Nc == 0 or N >= (M - 1):
                Nc+=1
                report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
-               cluster, seed, report = clustering(q1, ulim, mlim, grid, design, elems/devt, report)
+               cluster, seed, report, freedom = clustering(q1, ulim, mlim, grid, design, elems/devt, report)
 
                Na = len(cluster)
 
-               if Na > 3 and (Na > 30/free(Rt) or Na > len(seed)):
-                         
-                        print(Nc, "Seed size: ",len(seed),' N = ',N,'Na = ',Na)
+               if Na > 2 and freedom >= 30:
+
                         #press = raw_input("press enter") 
                         # Save cluster member indexes
                         cluster_members.append(indexs[cluster]) #(map(lambda i: indexs[i], cluster))
@@ -244,6 +243,7 @@ class Gmode:
                         cluster_stats.append(stats(elems[cluster])) #(shortcut(cluster, elems))
 
                         if realtime_map == 'y':
+                           print(Nc, "Seed size: ",len(seed),' N = ',N,'Na = ',Na)
                            try:
                               plot_map(Nc, cluster, seed, elems, q1, cluster_stats[-1][0], cluster_stats[-1][2], self.label)
                            except IndexError:
@@ -269,7 +269,7 @@ class Gmode:
                else:
                         Nc-=1
                         # Exclude clump members from the sample:
-                        if len(seed) > 2 and Na > 0: # Has initial seed and members.
+                        if len(seed) > 2 and Na > 2: # Has initial seed and members.
                            report.append("Failed Clump: "+l_to_s(design[cluster])) #map(lambda i: design[i], cluster)))
                                         
                            excluded.extend(indexs[cluster]) #map(lambda i: indexs[i], cluster))                         
@@ -279,10 +279,10 @@ class Gmode:
                            design = delete(design, cluster, 0)
                            indexs = delete(indexs, cluster, 0)
 
-                        elif len(seed) > 2 and Na == 0: # Has initial seed but no members.
-                           report.append("Failed Clump: "+l_to_s(design[cluster]))
+                        elif len(seed) > 2 and Na < 2: # Has initial seed but no members.
+                           report.append("Failed Seed: "+l_to_s(design[cluster]))
                                         
-                           failed_seed.extend(set(indexs[cluster]))                        
+                           failed_seed.append(set(indexs[cluster]))                        
                            
                            #for i in seed:  elems[i], design[i], indexs[i] = None, None, None
                            elems  = delete(elems, seed, 0)

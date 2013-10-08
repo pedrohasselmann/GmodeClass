@@ -33,7 +33,7 @@ def clustering(q1, ulim, mlim, grid, design, data, report):
        Na = len(seed)
        cluster = list(seed)
     else:      
-       return [], seed, report
+       return [], seed, report, 0.0
 
 # ______________________________CLASSIFICATION__________________________________
 
@@ -57,17 +57,18 @@ def clustering(q1, ulim, mlim, grid, design, data, report):
           if i == 0 and any(Sc < mlim):
              Sc = mlim                    
              stdc = sqrt(diagonal(Sc))
-
-# Once upper limit is reached the iteration is haulted.
-          if ulim < 1e0 and any(stdc >= ulim):
-             #print(Na, seed, stdc)
-             return cluster, seed, report
-
-# G hypothesis test:
+        
           #print(i, Na, stdc)
           iSc = Invert(Sc)
           f = free(Rc)
           #Rg = f/M
+          
+# Once upper limit is reached the iteration is haulted.
+          if ulim < 1e0 and any(stdc >= ulim):
+             #print(Na, seed, stdc)
+             return cluster, seed, report, Na*f
+
+# G hypothesis test:
 
           if Na*f >= 30:
              cluster = filter(lambda x: x != None, \
@@ -75,19 +76,19 @@ def clustering(q1, ulim, mlim, grid, design, data, report):
           
           else:
 	     #print("out by degree of freedom.")
-             return cluster, seed, report
+             return cluster, seed, report, Na*f
 
           Na = len(cluster)
           
           report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(stdc, 3))+"\nf: "+str(f)+"\n")
 
 # Discreetly increase std. until the seed start growing by itself.
-          if i == 0 and Na <= Na_prior:
-             Sc = Sc + mlim
-             stdc = sqrt(diagonal(Sc))
-          else:
-             i += 1
+          #if i == 0 and Na <= Na_prior:
+          #   Sc = Sc + mlim
+          #   stdc = sqrt(diagonal(Sc))
+          #else:
+          i += 1
              
-    return cluster, seed, report
+    return cluster, seed, report, Na*f
 
 # End of the Central Method

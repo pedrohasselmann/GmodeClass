@@ -46,7 +46,6 @@ def volume(lst):
 #
 
 def barycenter_KNN(data, index, label):
-
     ''' KNN with closest pairs'''
     
     #print(len(index))
@@ -81,7 +80,7 @@ def barycenter_KNN(data, index, label):
 #
 
 def barycenter_hist(grid, design, data, minsize=5): 
-
+    ''' KNN with histogramdd.'''
     upper = amax(data, axis=0)
     lower = amin(data, axis=0)
     rng   = range(data.shape[1])
