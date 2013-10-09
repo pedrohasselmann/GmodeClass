@@ -23,14 +23,12 @@ pathjoin = path.join
 
 option = config('config.cfg', 'PlotConfig')
 
-ylim   = map(float, option["ylim"])
-xlim   = map(float, option["xlim"])
-
 try:
    norm  = [int(option["norm"][0]), float(option["norm"][1])]
 except ValueError:
    norm = None
 
+ylim   = map(float, option["ylim"])
 axis   = map(float, option["axis"])
 label  = option["label"]
 xtitle = option["xtitle"]
@@ -154,7 +152,7 @@ def plot_spectral(n, stats, data, link):
     x_out, y_out = deque(), deque()
     
     plt.figure(figsize=(10,9))
-    plt.xlim(xlim[0],xlim[1])
+    plt.xlim(axis[0]-0.1, axis[-1]+0.1)
     plt.ylim(ylim[0],ylim[1])
     plt.xlabel(*xtitle)
     plt.ylabel(*ytitle)
@@ -213,7 +211,6 @@ def mosaic(cluster_members, data, link):
     
     kwargs = {'markersize':0.7, 'linestyle':'-','linewidth':0.5} 
 
-    data = array(data)
     data = ainsert(data, norm[0], norm[1], axis=1)
     
     grid = int(ceil(sqrt(len(cluster_members))))
@@ -249,7 +246,7 @@ def mosaic(cluster_members, data, link):
         
         plt.setp(sub.get_yticklabels(), fontsize=6, visible=vis1)
         plt.setp(sub.get_xticklabels(), fontsize=6, visible=True)
-        plt.ylim(0.2,1.8)
+        plt.ylim(ylim[0],ylim[1])
         plt.xlim(axis[0]-0.1, axis[-1]+0.1)
         plt.legend(loc=4, title=str(n+1), prop={'size':5,'weight':'black'}, numpoints=1,frameon=False)
 

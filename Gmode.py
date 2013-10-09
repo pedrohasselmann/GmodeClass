@@ -279,7 +279,7 @@ class Gmode:
                            design = delete(design, cluster, 0)
                            indexs = delete(indexs, cluster, 0)
 
-                        elif len(seed) > 2 and Na < 2: # Has initial seed but no members.
+                        elif len(seed) > 2 and Na < 3: # Has initial seed but no members.
                            report.append("Failed Seed: "+l_to_s(design[cluster]))
                                         
                            failed_seed.append(set(indexs[cluster]))                        
