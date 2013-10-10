@@ -27,7 +27,7 @@ TINY = 1e-9
 def free(R):
     return R.shape[1]**2 /asum(R)
 
-def pearson_R(X):
+def pearson_r2(X):
     r2 = corrcoef(zip(*X))**2
 
     if aall(isnan(r2)) : 
@@ -38,7 +38,7 @@ def pearson_R(X):
 
     return matrix(r2)
 
-def Robust_R(X, ct, dev):  
+def Robust_r2(X, ct, dev):  
     ''' Shevlyakov 1997 - On a Robust Estimation of Correlation Coeficient'''
     warnings.simplefilter("ignore")
     
@@ -75,9 +75,9 @@ def stats(X):
     ct  = median(X, axis=0)      
     S   = cov(X, ct)
     std = sqrt(diagonal(S))
-    R   = Robust_R(X, ct, std)
+    r2   = Robust_r2(X, ct, std)
 
-    return ct, std, S, R
+    return ct, std, S, r2
  
 def shortcut(group, data): 
     return stats(map(lambda j: data[j], group))
@@ -181,17 +181,6 @@ def collapse_classification(clusters, ID):
     
     return cat
 
-# Much faster look up than with lists, for larger lists
-
-def filtering(X, criteria):
-    @vectorize
-    def verify(elem): return elem not in criteria
-    return X[verify(X[:])]
-
-def select(X, crt):
-    @vectorize
-    def verify(elem): return elem in criteria
-    return X[verify(X[:])]
 
 
             

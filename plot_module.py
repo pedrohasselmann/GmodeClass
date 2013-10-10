@@ -13,6 +13,7 @@ from os import path
 from numpy import array, amin, amax, degrees, sqrt, arctan2, zeros, median, std, insert
 from numpy import insert as ainsert
 from numpy.linalg import eigh
+from numpy.linalg.linalg import LinAlgError
 from itertools import tee, izip, product
 import matplotlib.pyplot as plt
 from matplotlib.patches import Arc
@@ -23,12 +24,13 @@ pathjoin = path.join
 
 option = config('config.cfg', 'PlotConfig')
 
+ylim   = map(float, option["ylim"])
+
 try:
    norm  = [int(option["norm"][0]), float(option["norm"][1])]
 except ValueError:
    norm = None
 
-ylim   = map(float, option["ylim"])
 axis   = map(float, option["axis"])
 label  = option["label"]
 xtitle = option["xtitle"]
@@ -47,7 +49,7 @@ def pairwise(iterable):
 
 def plot_distribution(data,*zones):
 
-    plt.figure(figsize=(6,9),dpi=60)
+    plt.figure(figsize=(6,9),dpi=80)
     data = array(data)
     Na = data.shape[1]
     
@@ -136,7 +138,10 @@ def plot_map(Nc, clump, seed, data, q1, ct, cov, link):
     cb=plt.colorbar(orientation='horizontal',fraction=0.10,pad=0.3,drawedges=False)
     cb.set_label('log10(N)')
     
-    plt.savefig(pathjoin("TESTS",link,"maps",str(Nc)+'.png'),format='png', dpi=60)
+    try:
+       plt.savefig(pathjoin("TESTS",link,"maps",str(Nc)+'.png'),format='png', dpi=70)
+    except LinAlgError:
+       pass
     plt.clf()
 
 def plot_spectral(n, stats, data, link):
@@ -152,11 +157,11 @@ def plot_spectral(n, stats, data, link):
     x_out, y_out = deque(), deque()
     
     plt.figure(figsize=(10,9))
-    plt.xlim(axis[0]-0.1, axis[-1]+0.1)
     plt.ylim(ylim[0],ylim[1])
+    plt.xlim(axis[0]-0.1, axis[-1]+0.1)
     plt.xlabel(*xtitle)
     plt.ylabel(*ytitle)
-    plt.title('Cluster '+str(n)+' Na='+str(data.shape[0]))
+    plt.title('Clump '+str(n)+' Na='+str(data.shape[0]))
 
     for item in data:
             
@@ -193,7 +198,8 @@ def plot_spectral(n, stats, data, link):
        plt.show()
     else:
        try:
-          plt.savefig(pathjoin("TESTS",link,"plots",'cluster'+str(n)+'_'+link+'.png'),format='png', dpi=60)
+          plt.savefig(pathjoin("TESTS",link,"plots",'clump'+str(n)+'_'+link+'.png'),format='png', dpi=60)
+          #plt.savefig(pathjoin("TESTS",label,'Graph'+str(n)+'.png'),format='png')
        except OverflowError:
           pass
     
@@ -251,7 +257,7 @@ def mosaic(cluster_members, data, link):
         plt.legend(loc=4, title=str(n+1), prop={'size':5,'weight':'black'}, numpoints=1,frameon=False)
 
     plt.suptitle('Wavelength ($microns$)',fontsize=10,fontweight='black')
-    
+
     try:
         plt.savefig(pathjoin("TESTS",link,"plots","mosaic_"+link+".png"),format='png', dpi=300)
     except OverflowError:
@@ -304,27 +310,26 @@ def histogram(Y, cluster_sizes, link):
 #
 
 def dendrogram(D, link):
-    ''' Plot dendrogram of cluster parity.'''
+    ''' Plot dendrogram of cluster's parity.'''
   
     import scipy.cluster.hierarchy as sch
 
     lbl = [str(n+1) for n in xrange(D.shape[0])]
 
     # Compute and plot dendrogram.
-    fig = plt.figure(figsize=(8,14))
+    fig = plt.figure(figsize=(8,14),dpi=80)
     ax1 = fig.add_axes([0.04,0.04,0.9,0.9])
-    
     Y = sch.median(D)
-    Z = sch.dendrogram(Y, orientation='right',labels=lbl)
-    
-    #ax1.set_xticks([])
-    plt.setp(ax1.get_yticklabels(), fontsize=7)
+    Z1 = sch.dendrogram(Y, orientation='right',labels=lbl)
+    ax1.set_xticks([])
     ax1.set_ylabel("Identified Cluster")
     ax1.set_xlabel("Cluster Parity")
     plt.title(link)
 
     #plt.show()
-    plt.savefig(pathjoin("TESTS",link,"plots",'dendrogram_'+link+'.png'),format='png', dpi=250)
-    plt.close("all")  
-    
+    plt.savefig(pathjoin("TESTS",link,"plots",'dendrogram_'+link+'.png'),format='png', dpi=100)
+    #plt.show()
+    plt.close("all")
+
+
 # END

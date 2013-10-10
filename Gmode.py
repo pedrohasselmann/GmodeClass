@@ -151,10 +151,6 @@ class Gmode:
          self.elems  = array([array(item[2::2], dtype=float64) for item in data])
          self.errs   = array([array(item[3::2], dtype=float64) for item in data])
 
-         #self.elems  = [array(item[2:6], dtype=float64) for item in data]
-         #self.errs   = [array(item[6:], dtype=float64) for item in data]
-         #print('unique elements: ', len(set(self.design)))
-
          self.indexs = range(len(self.design))
 
      ########################### START PROCEDURE #################################
@@ -163,7 +159,7 @@ class Gmode:
 
          from kernel import clustering
          from plot_module import plot_map
-         from gmode_module import stats, shortcut, cov, free
+         from gmode_module import stats, cov, free
 
          if len(arg) == 0:
 
@@ -196,7 +192,7 @@ class Gmode:
 
          ##################################################
          
-         ctt, devt, St, Rt = stats(elems)
+         ctt, devt, St, r2t = stats(elems)
          #Se = cov(self.errs/devt, zeros(M), 1e0)
          
          #mlim = (mlim**2) * Se
@@ -210,7 +206,7 @@ class Gmode:
          report = deque([" Sample size: "+str(N)+" Variable size: "+str(M)])
          report.append(" S.D.: "+str(devt))
          report.append("Upper Limit: "+str(ulim))
-         report.append(" Minimum Deviation: "+str(mlim))
+         report.append(" Minimum Deviation: "+str(diagonal(mlim)))
          report.append(" Confidence level q1: "+str(normal.cdf(q1) - normal.cdf(-q1)))
          report.append('grid: '+str(grid)+" --> "+str(grid**(M)))
 
@@ -229,70 +225,65 @@ class Gmode:
          while Nc == 0 or N >= (M - 1):
                Nc+=1
                report.append('#################################### Clump '+str(Nc)+' ######################################### \n ')
-               cluster, seed, report, freedom = clustering(q1, ulim, mlim, grid, design, elems/devt, report)
+               cluster, seed, report, freedom = clustering(q1, ulim, mlim, grid, design, elems/devt, report) # whitten happenning here
 
                Na = len(cluster)
 
                if Na > 2 and freedom >= 30:
 
-                        #press = raw_input("press enter") 
-                        # Save cluster member indexes
-                        cluster_members.append(indexs[cluster]) #(map(lambda i: indexs[i], cluster))
+                     #press = raw_input("press enter") 
+                     # Save cluster member indexes
+                     cluster_members.append(indexs[cluster])
 
-                        # save cluster statistics
-                        cluster_stats.append(stats(elems[cluster])) #(shortcut(cluster, elems))
-
-                        if realtime_map == 'y':
-                           print(Nc, "Seed size: ",len(seed),' N = ',N,'Na = ',Na)
-                           try:
-                              plot_map(Nc, cluster, seed, elems, q1, cluster_stats[-1][0], cluster_stats[-1][2], self.label)
-                           except IndexError:
-                              pass
+                     # save cluster statistics
+                     cluster_stats.append(stats(elems[cluster]))
                         
-                        # Exclude group members from the sample:
-                        #for i in cluster:  elems[i], design[i], indexs[i] = None, None, None
-                        #elems  = filter(lambda x: x!=None, elems)
-                        #design = filter(lambda x: x!=None, design)
-                        #indexs = filter(lambda x: x!=None, indexs)
-                        elems  = delete(elems, cluster, 0)
-                        design = delete(design, cluster, 0)
-                        indexs = delete(indexs, cluster, 0)
- 
-                        # appending into logs
-                        report.append("\nC.T.: "+l_to_s(cluster_stats[-1][0])+"\nS.D.: "+l_to_s(cluster_stats[-1][1])+ \
-                                        "\nSize: "+str(Na)+"       Left: "+str(N)+"\n")
-                        
-                        report.append("Cov. Matrix: \n"+str(cluster_stats[-1][2])+"\n")
+                     # Exclude group members from the sample:
+                     elems  = delete(elems, cluster, 0)
+                     design = delete(design, cluster, 0)
+                     indexs = delete(indexs, cluster, 0)
 
-                        clusters_report.append(str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
-     
+                     if realtime_map == 'y':
+                       print(Nc, "Seed size: ",len(seed),'Na= ',Na,' N= ',N,' f= ',freedom)
+                       try:
+                         plot_map(Nc, cluster, seed, elems, q1, cluster_stats[-1][0], cluster_stats[-1][2], self.label)
+                       except IndexError:
+                         pass
+
+                     # appending into logs
+                     report.append("\nC.T.: "+l_to_s(cluster_stats[-1][0])+"\nS.D.: "+l_to_s(cluster_stats[-1][1])+ \
+                        "\nSize: "+str(Na)+"       Left: "+str(N)+"\nCov. Matrix: \n"+str(cluster_stats[-1][2])+"\n")
+
+                     clusters_report.append(str(Nc)+3*" "+str(Na)+3*" "+l_to_s(cluster_stats[-1][0])+3*" "+l_to_s(cluster_stats[-1][1]))
                else:
-                        Nc-=1
-                        # Exclude clump members from the sample:
-                        if len(seed) > 2 and Na > 2: # Has initial seed and members.
-                           report.append("Failed Clump: "+l_to_s(design[cluster])) #map(lambda i: design[i], cluster)))
-                                        
-                           excluded.extend(indexs[cluster]) #map(lambda i: indexs[i], cluster))                         
-                           
-                           #for i in cluster:  elems[i], design[i], indexs[i] = None, None, None
-                           elems  = delete(elems, cluster, 0)
-                           design = delete(design, cluster, 0)
-                           indexs = delete(indexs, cluster, 0)
 
-                        elif len(seed) > 2 and Na < 3: # Has initial seed but no members.
-                           report.append("Failed Seed: "+l_to_s(design[cluster]))
-                                        
-                           failed_seed.append(set(indexs[cluster]))                        
-                           
-                           #for i in seed:  elems[i], design[i], indexs[i] = None, None, None
-                           elems  = delete(elems, seed, 0)
-                           design = delete(design, seed, 0)
-                           indexs = delete(indexs, seed, 0)
+                     Nc-=1
+                     # Exclude clump members from the sample:
+                     if len(seed) > 2 and Na > 2: # Has initial seed and members.
 
-                        elif len(seed) < 3: # It does not have initial seed.
-                           break
+                       report.append("Failed Clump: "+l_to_s(design[cluster])) #map(lambda i: design[i], cluster)))
+                                        
+                       excluded.extend(indexs[cluster]) #map(lambda i: indexs[i], cluster))                         
+                           
+                       elems  = delete(elems, cluster, 0)
+                       design = delete(design, cluster, 0)
+                       indexs = delete(indexs, cluster, 0)
+
+                     elif len(seed) > 2 and Na < 3: # Has initial seed but no members.
+
+                       report.append("Failed Seed: "+l_to_s(design[seed]))
+                                        
+                       failed_seed.append(set(indexs[seed]))                        
+                           
+                       elems  = delete(elems, seed, 0)
+                       design = delete(design, seed, 0)
+                       indexs = delete(indexs, seed, 0)
+
+                     elif len(seed) < 3: # It does not have initial seed.
+                       break
 
                N = len(indexs)
+
 
          excluded.extend(indexs)
 
@@ -510,7 +501,7 @@ class Gmode:
 if __name__ == '__main__':
    gmode  = Gmode()
    gmode.load_data()
-   gmode.run(realtime_map="n", save="y")
+   gmode.run(realtime_map="y", save="y")
    gmode.evaluate()
    gmode.classification_per_id()
    gmode.classification()

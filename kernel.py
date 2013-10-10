@@ -10,10 +10,10 @@ from gmode_module import stats, hyp_test, Invert, free
 from barycenter import barycenter_hist, barycenter_density
 from file_module import l_to_s
 from itertools import imap
-from numpy import sqrt, amax, amin, eye, diagonal, diagflat, ndenumerate, any, all
+from numpy import sqrt, amax, amin, diagonal, diagflat, ndenumerate, any, all
 from numpy import sum as asum
 from numpy import round as arround
-#from plot_module import plot_clump
+from collections import deque
    
 ############ Neighboring Central Method: Recognition of Classes and Classification ###########
  
@@ -38,54 +38,51 @@ def clustering(q1, ulim, mlim, grid, design, data, report):
 # ______________________________CLASSIFICATION__________________________________
 
     i = 0
-    Rc, Na_prior, Na_prior02  = eye(M), Na, Na
+    f_rec = deque()
+    cluster = seed
     index = range(N)
 
-    while (i == 0 or (round(asum(Rc),6) != round(asum(R_prior),6) and Na != Na_prior and Na != Na_prior02)) and i < 40 and Na > 2:
-
-          R_prior = Rc
+    while (i == 0 or cluster[:] != cluster_prior[:]) and i < 40 and Na > 2: # (round(f,6) != round(f_prior,6) and Na != Na_prior and Na != Na_prior02)
 
 # *c --> cluster statistics
 
-          ctc, stdc, Sc, Rc = stats(data[cluster])
+          ct, std, S, r2 = stats(data[cluster])
 
-          Na_prior02 = Na_prior
-          Na_prior   = Na
+          cluster_prior = cluster
           
 # Replace lower deviations than minimal limit:
+          if i == 0 and any(S < mlim):
+             S = mlim                    
+             std = sqrt(diagonal(S))
 
-          if i == 0 and any(Sc < mlim):
-             Sc = mlim                    
-             stdc = sqrt(diagonal(Sc))
-        
-          #print(i, Na, stdc)
-          iSc = Invert(Sc)
-          f = free(Rc)
-          #Rg = f/M
+          iS = Invert(S)
+          f = free(r2)
+
+          f_rec.append(f)
+          cluster_prior = cluster
+
+          f_ = min(f_rec)
           
 # Once upper limit is reached the iteration is haulted.
-          if ulim < 1e0 and any(stdc >= ulim):
-             #print(Na, seed, stdc)
+          if ulim < 1e0 and any(std >= ulim):
              return cluster, seed, report, Na*f
 
+          report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(std, 3))+"\nf: "+str(f)+"\n")
+          
 # G hypothesis test:
 
-          if Na*f >= 30:
+          if i == 0 or Na*f >= 30:
              cluster = filter(lambda x: x != None, \
-                              imap(lambda ind, y: hyp_test(Na,q1,f,ind,y,ctc,iSc), index, data))
-          
+                              imap(lambda ind, y: hyp_test(Na,q1,f_,ind,y,ct,iS), index, data))          
           else:
-	     #print("out by degree of freedom.")
              return cluster, seed, report, Na*f
 
           Na = len(cluster)
-          
-          report.append("Run "+str(i)+" Size: "+str(Na)+" S.D.: "+l_to_s(arround(stdc, 3))+"\nf: "+str(f)+"\n")
 
 # Discreetly increase std. until the seed start growing by itself.
           #if i == 0 and Na <= Na_prior:
-          #   Sc = Sc + mlim
-          #   stdc = sqrt(diagonal(Sc))
+          #   S = S + mlim
+          #   std = sqrt(diagonal(S))
           #else:
           i += 1
              

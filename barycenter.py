@@ -131,7 +131,7 @@ def barycenter_density(data, grid, upper, lower, vmin, dens = 0e0):
     density = amax(hist) / volume(zone)
     # Elements inside the zone:
     inside = filter(lambda x: x != None, \
-                     imap(lambda i, y: boolist(i,y,zone), xrange(data.shape[0]), data))
+                    imap(lambda i, y: boolist(i,y,zone), xrange(data.shape[0]), data))
     # If density keep growing and vmin not reached, the function works recursively.
     # Stops when any of thoses conditions are not satisfied anymore.
     if density > dens and aall(mad(data[inside]) > diagonal(vmin)):

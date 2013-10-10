@@ -15,7 +15,7 @@ def fit(where_data, q1_range, m_range):
     gmode = Gm.Gmode()
     
     gmode.load_data(filename=where_data)
-    gmode.grid = 3
+    gmode.grid = 2
     
     form = "{0:.2f} {1:.2f}  {2:3}  {3:4}  {4:.4f}".format
     report = deque(["q1  mlim  Nc  E  R"])
@@ -33,11 +33,11 @@ def fit(where_data, q1_range, m_range):
 
     out.write(text)
 
-def plot(highlight=None, **lim):
+def plot(highlight=None, tests="tests.txt", **lim):
     import matplotlib.pyplot as plt
     from numpy import loadtxt
     
-    q1, mlim, Nc, excluded, robust = loadtxt(path.join("TESTS","tests_mlim.txt"), unpack=True, dtype=None, skiprows=1)
+    q1, mlim, Nc, excluded, robust = loadtxt(path.join("TESTS",tests), unpack=True, dtype=None, skiprows=1)
     
     name = ['({0:.2f}, {1:.2f})'.format(*item) for item in zip(q1, mlim)]
 
@@ -84,6 +84,6 @@ def plot(highlight=None, **lim):
 if __name__ == "__main__":
    
    data_path = path.join("SDSSMOC","lists","MOC4_2quartile_refl.dat")
-   fit(data_path, [1.6,2.0,0.1],[0.1,0.3,0.05])
-   #plot(Nc=[30,100], excluded=[0, 2000], robust=0.2)
+   fit(data_path, [1.2,2.5,0.1],[0.05,0.4,0.05])
+   #plot(tests="tests_mlim_moc2q.txt", Nc=[20,50], excluded=[0, 700], robust=0.1)
     
