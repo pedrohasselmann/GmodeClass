@@ -24,7 +24,7 @@ def clustering(q1, ulim, mlim, grid, design, data, report):
     M = data.shape[1]    # Variable size
 
 #________________________________Barycenter______________________________________
-    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), sqrt(mlim))
+    seed = barycenter_density(data, grid, amax(data, axis=0), amin(data, axis=0), sqrt(mlim) )#nmin=int(2*grid*30/M))
     #seed = barycenter_hist(grid, design, data)
     
     if len(seed) > 2:
@@ -42,13 +42,11 @@ def clustering(q1, ulim, mlim, grid, design, data, report):
     cluster = seed
     index = range(N)
 
-    while (i == 0 or cluster[:] != cluster_prior[:]) and i < 40 and Na > 2: # (round(f,6) != round(f_prior,6) and Na != Na_prior and Na != Na_prior02)
+    while (i == 0 or cluster[:] != cluster_prior[:]) and i < 30 and Na > 2:
 
 # *c --> cluster statistics
 
           ct, std, S, r2 = stats(data[cluster])
-
-          cluster_prior = cluster
           
 # Replace lower deviations than minimal limit:
           if i == 0 and any(S < mlim):
@@ -58,10 +56,10 @@ def clustering(q1, ulim, mlim, grid, design, data, report):
           iS = Invert(S)
           f = free(r2)
 
-          f_rec.append(f)
           cluster_prior = cluster
 
-          f_ = min(f_rec)
+          #f_rec.append(f)
+          #f_ = min(f_rec)
           
 # Once upper limit is reached the iteration is haulted.
           if ulim < 1e0 and any(std >= ulim):
@@ -73,7 +71,7 @@ def clustering(q1, ulim, mlim, grid, design, data, report):
 
           if i == 0 or Na*f >= 30:
              cluster = filter(lambda x: x != None, \
-                              imap(lambda ind, y: hyp_test(Na,q1,f_,ind,y,ct,iS), index, data))          
+                              imap(lambda ind, y: hyp_test(Na,q1,f,ind,y,ct,iS), index, data))          
           else:
              return cluster, seed, report, Na*f
 

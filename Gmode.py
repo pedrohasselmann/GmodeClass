@@ -214,6 +214,7 @@ class Gmode:
          failed_seed       = deque()
          cluster_members   = deque()
          cluster_stats     = deque()
+         n_failedseeds     = 0
 
          if realtime_map == 'y': plot_map(0, [], [], elems, q1, [], [], self.label)
          
@@ -263,7 +264,8 @@ class Gmode:
 
                        report.append("Failed Clump: "+l_to_s(design[cluster])) #map(lambda i: design[i], cluster)))
                                         
-                       excluded.extend(indexs[cluster]) #map(lambda i: indexs[i], cluster))                         
+                       failed_seed.append(set(indexs[cluster])) #map(lambda i: indexs[i], cluster))
+                       n_failedseeds = n_failedseeds + len(cluster)
                            
                        elems  = delete(elems, cluster, 0)
                        design = delete(design, cluster, 0)
@@ -274,7 +276,8 @@ class Gmode:
                        report.append("Failed Seed: "+l_to_s(design[seed]))
                                         
                        failed_seed.append(set(indexs[seed]))                        
-                           
+                       n_failedseeds = n_failedseeds + len(cluster)
+
                        elems  = delete(elems, seed, 0)
                        design = delete(design, seed, 0)
                        indexs = delete(indexs, seed, 0)
@@ -289,7 +292,7 @@ class Gmode:
 
          report.append("######################### Excluded ###############################")
          report.append("Excluded Sample Size: "+str(len(excluded)))
-         report.append("Failed Seeds: "+str(len(failed_seed)))
+         report.append("Failed Seeds: "+str(n_failedseeds))
          print("Number of Clusters: ", len(cluster_stats))
          print("Excluded Sample Size: ",len(excluded))
          print("Failed Seeds: ",len(failed_seed))
@@ -315,7 +318,7 @@ class Gmode:
 
      def evaluate(self, q2=None):
 
-         if q2 == None: q2 = self.q2
+         if q2 == None: q2 = self.q1
 
          if len(self.cluster_members) > 1:
 
@@ -355,7 +358,7 @@ class Gmode:
          if q1 == None:  q1  = self.q1
            
          cluster_members = self.cluster_members
-         sample = map(lambda j: self.elems[j], excluded)
+         sample = self.elems[self.excluded]
           
          self.reclass = deque()
          for n, st in enumerate(self.cluster_stats):
@@ -379,34 +382,35 @@ class Gmode:
 
      ###### GIVE MEANING TO YOUR CLUSTERS ######
 
-     def correspondence(self, templates, template_name, q1=None, artifact=None):
+     def correspondence(self, templates, template_name, q1=None, artifact=None, var=None):
          ''' Fulchignoni et al. (2000) extension used to give a correspondence to clusters'''
        
          from itertools import  imap
          from gmode_module import Invert, free, hyp_test
-         from file_module import pickle, unpickle, writedict
+         from file_module import pickle, writedict
+         import cPickle as pkl
 
          if q1 == None:  q1  = self.q1
 
          cluster_members = self.cluster_members
          cluster_stats   = self.cluster_stats
          
-         templ = unpickle(templates)
+         templ = pkl.load(open(templates,'rb')) 
          
          interpretation = dict()
 
          for n, stat in enumerate(cluster_stats):
-             iS = Invert(stat[2])
-             f = free(stat[3])
+             iS = Invert(stat[2][var, :][:, var])
+             f = free(stat[3][var, :][:, var])
              size =  len(cluster_members[n])
 
              selected = filter(lambda x: x != None, \
-                               imap(lambda key, y: hyp_test(size, q1, f, key, y, stat[0], iS), templ.keys(), templ.values()))
+                               imap(lambda key, y: hyp_test(size, q1, f, key, y[var], stat[0][var], iS), templ.keys(), templ.values()))
            
              interpretation[n+1] = selected
 
-         writedict(interpretation,open(pathjoin("TESTS",self.label,'corr_q'+str(q1)+'_'+template_name+'.dat'),  'w'))
-         pickle(interpretation, self.label, "corr_q"+str(q1)+'_'+template_name)
+         writedict(interpretation,open(pathjoin("TESTS",self.label,'correspondence_q'+str(q1)+'_'+template_name+'.dat'),  'w'))
+         pickle(interpretation, self.label, "correspondence_q"+str(q1)+'_'+template_name)
              
      ############### ROBUSTNESS PARAMETER ##################
      
